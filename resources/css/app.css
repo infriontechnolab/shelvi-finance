@@ -1,0 +1,323 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views';
+
+/* DataTable cells now render via Blade partials (resources/views/datatables/cells/),
+   so their classes are scanned through @source '../views' above — no badge/amount/pill
+   safelist needed. Only JS-emitted classes still require an explicit safelist. */
+/* jquery-validation error styling emitted from app.js (scanner can't see JS strings). */
+@source inline("border-destructive ring-1 ring-destructive/20 mt-1 text-xs font-medium");
+
+/* Dark mode = .dark class on <html> (shadcn strategy, Tailwind v4 custom variant) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Shelvi brand tokens — orange-red primary, deep-indigo sidebar (see BRAND.md) */
+:root {
+    --radius: 0.75rem;
+    --background: oklch(0.975 0.004 260);
+    --foreground: oklch(0.25 0.035 260);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.25 0.035 260);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.129 0.042 264.695);
+    --primary: oklch(0.59 0.22 27);
+    --primary-foreground: oklch(0.99 0.002 260);
+    --secondary: oklch(0.94 0.025 25);
+    --secondary-foreground: oklch(0.49 0.19 27);
+    --muted: oklch(0.968 0.007 247.896);
+    --muted-foreground: oklch(0.554 0.046 257.417);
+    --accent: oklch(0.95 0.01 260);
+    --accent-foreground: oklch(0.25 0.035 260);
+    --destructive: oklch(0.577 0.245 27.325);
+    --destructive-foreground: oklch(0.984 0.003 247.858);
+    --border: oklch(0.91 0.01 260);
+    --input: oklch(0.89 0.012 260);
+    --ring: oklch(0.59 0.22 27);
+    --chart-1: oklch(0.59 0.22 27);
+    --chart-2: oklch(0.47 0.13 251);
+    --chart-3: oklch(0.72 0.15 170);
+    --chart-4: oklch(0.72 0.15 75);
+    --chart-5: oklch(0.63 0.16 310);
+    --sidebar: oklch(0.25 0.052 259);
+    --sidebar-foreground: oklch(0.97 0.005 260);
+    --sidebar-primary: oklch(0.63 0.22 27);
+    --sidebar-primary-foreground: oklch(0.99 0.002 260);
+    --sidebar-accent: oklch(0.34 0.065 258);
+    --sidebar-accent-foreground: oklch(0.99 0.002 260);
+    --sidebar-border: oklch(0.38 0.045 260);
+    --sidebar-ring: oklch(0.63 0.22 27);
+    --surface: oklch(1 0 0);
+    --overlay: oklch(0.12 0.03 260 / 55%);
+    --sidebar-muted: oklch(0.75 0.025 260);
+    --sidebar-hover: oklch(0.29 0.055 259);
+    --shadow-accent: 0 8px 24px oklch(0.59 0.22 27 / 22%);
+}
+
+.dark {
+    --background: oklch(0.129 0.042 264.695);
+    --foreground: oklch(0.984 0.003 247.858);
+    --card: oklch(0.208 0.042 265.755);
+    --card-foreground: oklch(0.984 0.003 247.858);
+    --popover: oklch(0.208 0.042 265.755);
+    --popover-foreground: oklch(0.984 0.003 247.858);
+    --primary: oklch(0.66 0.21 30);
+    --primary-foreground: oklch(0.99 0.002 260);
+    --secondary: oklch(0.279 0.041 260.031);
+    --secondary-foreground: oklch(0.984 0.003 247.858);
+    --muted: oklch(0.279 0.041 260.031);
+    --muted-foreground: oklch(0.704 0.04 256.788);
+    --accent: oklch(0.279 0.041 260.031);
+    --accent-foreground: oklch(0.984 0.003 247.858);
+    --destructive: oklch(0.704 0.191 22.216);
+    --destructive-foreground: oklch(0.984 0.003 247.858);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.66 0.21 30);
+    --chart-1: oklch(0.66 0.21 30);
+    --chart-2: oklch(0.47 0.13 251);
+    --chart-3: oklch(0.72 0.15 170);
+    --chart-4: oklch(0.72 0.15 75);
+    --chart-5: oklch(0.63 0.16 310);
+    --sidebar: oklch(0.208 0.042 265.755);
+    --sidebar-foreground: oklch(0.984 0.003 247.858);
+    --sidebar-primary: oklch(0.66 0.21 30);
+    --sidebar-primary-foreground: oklch(0.99 0.002 260);
+    --sidebar-accent: oklch(0.279 0.041 260.031);
+    --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.66 0.21 30);
+    --surface: oklch(0.208 0.042 265.755);
+    --overlay: oklch(0.08 0.02 264 / 60%);
+    --sidebar-muted: oklch(0.704 0.04 256.788);
+    --sidebar-hover: oklch(0.279 0.041 260.031);
+    --shadow-accent: 0 8px 24px oklch(0.66 0.21 30 / 28%);
+}
+
+/* Map tokens to Tailwind utilities (bg-background, text-foreground, rounded-lg, etc.) */
+@theme inline {
+    --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-muted: var(--sidebar-muted);
+    --color-sidebar-hover: var(--sidebar-hover);
+    --color-surface: var(--surface);
+    --color-overlay: var(--overlay);
+    --shadow-accent: var(--shadow-accent);
+}
+
+@layer base {
+    * {
+        border-color: var(--color-border);
+        outline-color: color-mix(in oklab, var(--color-ring) 50%, transparent);
+    }
+    body {
+        background-color: var(--color-background);
+        color: var(--color-foreground);
+    }
+}
+
+/* Combobox: show check on the selected item */
+[data-combobox-item][aria-selected="true"] [data-combobox-check] { opacity: 1; }
+
+/* ============================================================
+   DataTables (core, unstyled) → shadcn theme. Unlayered so it
+   wins over Tailwind base; uses theme tokens for auto light/dark.
+   ============================================================ */
+.dt-container {
+    width: 100%;
+    font-size: 0.875rem;
+    color: var(--color-foreground);
+}
+
+/* Control rows (length+search on top, info+paging on bottom) */
+.dt-container .dt-layout-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+.dt-container .dt-layout-row:first-child { margin-bottom: 1rem; }
+.dt-container .dt-layout-row:last-child { margin-top: 1rem; }
+.dt-container .dt-layout-cell { display: flex; align-items: center; gap: 0.5rem; }
+
+/* Full-width rows (the table region) must fill, not shrink to content */
+.dt-container .dt-layout-cell.dt-layout-full,
+.dt-container .dt-layout-cell.dt-layout-table {
+    display: block;
+    flex: 1 1 100%;
+    width: 100%;
+}
+/* Horizontal scroll for wide tables on small screens (cells are nowrap) */
+.dt-container .dt-layout-cell.dt-layout-table { overflow-x: auto; }
+
+/* Search input + length select → shadcn input look */
+.dt-container .dt-search input,
+.dt-container .dt-length select {
+    height: 2.25rem;
+    border: 1px solid var(--color-input);
+    background: transparent;
+    border-radius: var(--radius-md);
+    padding: 0 0.75rem;
+    font-size: 0.875rem;
+    color: var(--color-foreground);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+}
+.dt-container .dt-search input { min-width: 15rem; }
+.dt-container .dt-search input::placeholder { color: var(--color-muted-foreground); }
+.dt-container .dt-search input:focus,
+.dt-container .dt-length select:focus {
+    border-color: var(--color-ring);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-ring) 35%, transparent);
+}
+.dt-container .dt-length select { cursor: pointer; }
+.dt-container .dt-length label,
+.dt-container .dt-search label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    color: var(--color-muted-foreground);
+}
+.dt-container .dt-length select { width: auto; }
+
+/* Force table to fill the card (DataTables autoWidth disabled) */
+table.dataTable { width: 100% !important; }
+
+/* Table */
+table.dataTable { width: 100%; border-collapse: collapse; overflow: hidden; }
+table.dataTable thead th {
+    text-align: left;
+    font-weight: 500;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-muted-foreground);
+    padding: 0.625rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    background: color-mix(in oklab, var(--color-muted) 45%, transparent);
+    white-space: nowrap;
+    user-select: none;
+}
+table.dataTable thead th:first-child { border-top-left-radius: var(--radius-md); }
+table.dataTable thead th:last-child { border-top-right-radius: var(--radius-md); }
+table.dataTable tbody td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+    white-space: nowrap;
+}
+table.dataTable tbody tr { transition: background-color 0.15s; }
+table.dataTable tbody tr:hover { background: color-mix(in oklab, var(--color-muted) 55%, transparent); }
+table.dataTable tbody tr:last-child td { border-bottom: 0; }
+
+/* Sort carets on the .dt-column-order span DataTables injects */
+table.dataTable thead th.dt-orderable-asc,
+table.dataTable thead th.dt-orderable-desc { cursor: pointer; }
+table.dataTable thead th.dt-orderable-asc:hover,
+table.dataTable thead th.dt-orderable-desc:hover { color: var(--color-foreground); }
+.dt-column-order { position: relative; display: inline-block; width: 0.9em; height: 1em; vertical-align: middle; }
+.dt-column-order::before,
+.dt-column-order::after {
+    position: absolute;
+    left: 0.15em;
+    font-size: 0.7em;
+    line-height: 1;
+    opacity: 0.35;
+}
+.dt-column-order::before { content: "▲"; top: -0.1em; }
+.dt-column-order::after { content: "▼"; bottom: -0.1em; }
+table.dataTable thead th.dt-ordering-asc .dt-column-order::before { opacity: 1; color: var(--color-primary); }
+table.dataTable thead th.dt-ordering-desc .dt-column-order::after { opacity: 1; color: var(--color-primary); }
+
+/* Info text */
+.dt-container .dt-info { color: var(--color-muted-foreground); font-size: 0.8125rem; }
+
+/* Pagination → shadcn buttons */
+.dt-container .dt-paging nav { display: flex; align-items: center; gap: 0.25rem; }
+.dt-container .dt-paging-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 2rem;
+    padding: 0 0.625rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-foreground);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+.dt-container .dt-paging-button:hover:not(.disabled):not(.current) {
+    background: var(--color-accent);
+    color: var(--color-accent-foreground);
+}
+.dt-container .dt-paging-button.current {
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+    font-weight: 600;
+}
+.dt-container .dt-paging-button.disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Zebra striping (reference look). Hover rule repeated after so it wins over zebra. */
+table.dataTable tbody tr:nth-child(even) { background: color-mix(in oklab, var(--color-muted) 30%, transparent); }
+table.dataTable tbody tr:hover { background: color-mix(in oklab, var(--color-muted) 60%, transparent); }
+
+/* Processing overlay */
+.dt-container .dt-processing {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-popover);
+    color: var(--color-foreground);
+    font-size: 0.8125rem;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+}
