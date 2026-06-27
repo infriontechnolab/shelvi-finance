@@ -4,9 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Design-only admin theme — Laravel 13 (PHP 8.3) + Tailwind CSS v4 + Blade. **No React, no Alpine.**
-shadcn/ui visual language reproduced as native Blade components using Tailwind utilities. No real
-models/DB/auth — pages render demo data from in-memory Collections. Brand name in UI is "Shelvi".
+Design-only **finance/receivables** admin panel — Laravel 13 (PHP 8.3) + Tailwind CSS v4 + Blade.
+**No React, no Alpine.** shadcn/ui visual language reproduced as native Blade components using Tailwind
+utilities. No real DB/auth — pages render in-memory data behind a repository seam (see below), so a real
+database can slot in without touching controllers or views. Brand name in UI is "Shelvi". Domain pages:
+dashboard, bank accounts, party management, money received/paid, party ledger, cheque management, reports.
+
+Money is formatted with `App\Support\Inr` (Indian lakh/crore grouping, `₹XX,XX,XXX`); dates are stored
+ISO and rendered via `App\Support\Dates::human` (server) / `window.fmtDate` (client) so DataTables sort
+chronologically rather than lexically.
 
 ## Commands
 
@@ -29,16 +35,32 @@ Shared host has **no npm at runtime**. `public/build/` is compiled locally, comm
 
 ## Architecture
 
-### Routes → DataTables (no controllers/models)
-`routes/web.php` wires routes directly to Yajra DataTable service classes (`app/DataTables/`) via
-closures. There are no controllers or Eloquent models beyond the skeleton `User`. Each table class
-`extends BaseDataTable` and supplies only its `query()` (returns a demo `Collection`), `dataTable()`
-(column renderers), `html()`, and `getColumns()`.
+### Routes → Controllers → DataTables (no Eloquent models)
+`routes/web.php` wires resource-style routes to thin controllers (`app/Http/Controllers/`). There are
+no Eloquent models beyond the skeleton `User`; data comes from the repository seam (below). Each list
+view is a Yajra DataTable service (`app/DataTables/`) that `extends BaseDataTable` and supplies
+`query()` (returns a `Collection` from an injected repository), `dataTable()` (column renderers),
+`html()`, and `getColumns()`.
 
-- A DataTable page route returns `$dataTable->render('pages.x')` — same URL serves the HTML page
+- A controller `index()` returns `$dataTable->render('pages.x')` — same URL serves the HTML page
   (GET) and the server-side JSON (DataTables ajax).
-- The dashboard hosts multiple table widgets; each widget has its **own dedicated ajax route**
-  (`/dashboard/recent-orders`, etc.) so an ajax request never receives the HTML page.
+- The dashboard hosts widgets with their **own dedicated ajax route**
+  (`/dashboard/recent-txns`) so an ajax request never receives the HTML page.
+- Create/edit are **one shared form page** per resource (`pages.x-form`), mode-detected by whether the
+  record var is null; the controller passes the record (or `abort(404)`) plus form options.
+
+### Repository seam (swap-in point for a real DB)
+Controllers and DataTables depend on **contracts** in `app/Repositories/Contracts/` (Party, Bank,
+Cheque, Ledger, Money, Dashboard, Report), bound to in-memory implementations in
+`app/Repositories/Mock/` via the `REPOSITORIES` map in `AppServiceProvider::register()`. To go live,
+write Eloquent implementations of the same interfaces and flip the map — controllers, DataTables, and
+views don't change. DataTables receive their repository through **constructor injection** (Yajra's base
+has no constructor, so this is safe); the container resolves them because controllers type-hint them.
+
+`App\Data\Mock` is now a **raw-fixture class only** (the seed data). Finders/aggregation/options were
+moved out: static select lists live in `config/options.php`, and aggregates are typed readonly DTOs
+(`App\Data\LedgerSummary`, `App\Data\ChequeStats`) returned by the Ledger/Cheque repositories. Views
+read DTOs as objects (`$summary->opening`, `$stats->bounced`), not arrays.
 
 ### BaseDataTable (`app/DataTables/BaseDataTable.php`)
 Holds all shared config and cell renderers so concrete tables stay thin:
@@ -72,7 +94,18 @@ icons. Icons render `<i data-lucide="...">` placeholders into SVG; `renderIcons(
 `draw.dt` so ajax-injected rows (action buttons) get icons. Fonts (Manrope, Plus Jakarta Sans) are
 self-hosted by the Vite build via `bunny()` in `vite.config.js` — no runtime CDN.
 
-### Blade UI kit
+### Blade UI kit & shell
 `resources/views/components/ui/*` — shadcn-styled components (button, card, input, badge, dropdown,
-combobox, table primitives). Pages in `resources/views/pages/`; shell in `components/layouts/admin.blade.php`
-(sidebar nav array is defined inline at top of that file).
+combobox, table primitives). Pages in `resources/views/pages/`. The shell
+`components/layouts/admin.blade.php` is shell-only (head, no-flash script, title/subtitle/actions
+slots) and composes extracted components: `components/{sidebar,navbar,confirm-dialog,toast}.blade.php`.
+The sidebar reads its nav tree from **`config/navigation.php`** (not inline).
+
+### Forms & client validation
+Create/edit forms carry `data-validate`; `initFormValidation()` in `app.js` wires
+[jquery-validation](https://jqueryvalidation.org/) (keyed by input `name` — every field needs a unique
+`name`, not just `id`). Required combobox hidden inputs emit `data-rule-required`. Use `:user-invalid`
+(not `:invalid`) for error styling so blank required fields don't flag on first paint. Client validation
+is **not** security — add a server `FormRequest` when real write routes land. Deletes are wired to a
+confirm dialog via `data-confirm` (handled in `app.js`); in this design-only build delete just removes
+the row from the DOM.
