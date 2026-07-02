@@ -9,34 +9,43 @@
                 <x-ui.card-description>Fields marked <span class="text-destructive">*</span> are required.</x-ui.card-description>
             </x-ui.card-header>
             <x-ui.card-content>
-                <form class="space-y-4" data-validate>
+                <form class="space-y-4" data-validate method="POST" action="{{ route('money-received.store') }}">
+                    @csrf
+                    <input type="hidden" name="direction" value="received">
+                    @if ($errors->any())
+                        <div class="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                            <ul class="list-inside list-disc">
+                                @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+                            </ul>
+                        </div>
+                    @endif
                     <div class="space-y-1.5">
                         <x-ui.label for="r-party">Party <span class="text-destructive">*</span></x-ui.label>
                         <x-ui.combobox id="r-party" name="party" width="w-full" placeholder="Select party…" searchPlaceholder="Search party…" :required="true"
-                            :options="['' => 'Select party…'] + $parties" />
+                            :value="old('party')" :options="['' => 'Select party…'] + $parties" />
                     </div>
                     <div class="space-y-1.5">
                         <x-ui.label for="r-amount">Amount (₹) <span class="text-destructive">*</span></x-ui.label>
-                        <x-ui.input id="r-amount" name="amount" type="number" min="0" placeholder="0" required
+                        <x-ui.input id="r-amount" name="amount" type="number" min="0" placeholder="0" required value="{{ old('amount') }}"
                             class="num font-mono tabular-nums user-invalid:border-destructive user-invalid:ring-destructive/20" />
                     </div>
                     <div class="space-y-1.5">
                         <x-ui.label for="r-method">Method <span class="text-destructive">*</span></x-ui.label>
                         <x-ui.combobox id="r-method" name="method" width="w-full" placeholder="Select method…" searchPlaceholder="Search…" :required="true"
-                            :options="['' => 'Select method…', 'Online' => 'Online', 'UPI' => 'UPI', 'Cheque' => 'Cheque', 'Cash' => 'Cash']" />
+                            :value="old('method')" :options="['' => 'Select method…'] + $methods" />
                     </div>
                     <div class="space-y-1.5">
                         <x-ui.label for="r-bank">Deposit Bank <span class="text-destructive">*</span></x-ui.label>
                         <x-ui.combobox id="r-bank" name="bank" width="w-full" placeholder="Select bank…" searchPlaceholder="Search bank…" :required="true"
-                            :options="['' => 'Select bank…'] + $banksList" />
+                            :value="old('bank')" :options="['' => 'Select bank…'] + $banksList" />
                     </div>
                     <div class="space-y-1.5">
                         <x-ui.label for="r-ref">Reference No</x-ui.label>
-                        <x-ui.input id="r-ref" name="ref" placeholder="NEFT / UPI / Cheque ref" class="font-mono" />
+                        <x-ui.input id="r-ref" name="ref" placeholder="NEFT / UPI / Cheque ref" class="font-mono" value="{{ old('ref') }}" />
                     </div>
                     <div class="space-y-1.5">
                         <x-ui.label for="r-date">Date <span class="text-destructive">*</span></x-ui.label>
-                        <x-ui.input id="r-date" name="date" type="date" required class="user-invalid:border-destructive user-invalid:ring-destructive/20" />
+                        <x-ui.input id="r-date" name="date" type="date" required value="{{ old('date') }}" class="user-invalid:border-destructive user-invalid:ring-destructive/20" />
                     </div>
                     <div class="flex gap-2 pt-2">
                         <x-ui.button type="submit" size="sm" class="flex-1"><x-ui.icon name="check" /> Save receipt</x-ui.button>

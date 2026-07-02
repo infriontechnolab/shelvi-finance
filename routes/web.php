@@ -36,11 +36,16 @@ Route::middleware('auth')->group(function () {
     Route::put('/parties/{party}', [PartyController::class, 'update'])->name('parties.update')->middleware('permission:parties.update');
     Route::delete('/parties/{party}', [PartyController::class, 'destroy'])->name('parties.destroy')->middleware('permission:parties.delete');
 
-    // Money Received / Money Paid.
+    // Money Received / Money Paid (both are `transactions` rows, direction-tagged).
     Route::middleware('permission:transactions.view')->group(function () {
         Route::get('/money-received', [MoneyController::class, 'received'])->name('money-received');
         Route::get('/money-paid', [MoneyController::class, 'paid'])->name('money-paid');
     });
+    Route::post('/money-received', [MoneyController::class, 'store'])->name('money-received.store')->middleware('permission:transactions.create');
+    Route::post('/money-paid', [MoneyController::class, 'store'])->name('money-paid.store')->middleware('permission:transactions.create');
+    Route::get('/transactions/{transaction}/edit', [MoneyController::class, 'edit'])->name('transactions.edit')->middleware('permission:transactions.update');
+    Route::put('/transactions/{transaction}', [MoneyController::class, 'update'])->name('transactions.update')->middleware('permission:transactions.update');
+    Route::delete('/transactions/{transaction}', [MoneyController::class, 'destroy'])->name('transactions.destroy')->middleware('permission:transactions.delete');
 
     // Party Ledger.
     Route::get('/ledger', [LedgerController::class, 'index'])->name('ledger')->middleware('permission:ledger.view');

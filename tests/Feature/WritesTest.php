@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Bank;
 use App\Models\Cheque;
 use App\Models\Party;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Repositories\Contracts\ChequeRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -82,6 +83,54 @@ class WritesTest extends TestCase
         // Cheque list resolves the parent withTrashed, so the name doesn't vanish.
         $rows = app(ChequeRepository::class)->all();
         $this->assertTrue($rows->contains(fn ($r) => $r['party'] === $party->name));
+    }
+
+    public function test_money_received_and_paid_crud(): void
+    {
+        $admin = $this->admin();
+
+        // create a receipt
+        $this->actingAs($admin)->post('/money-received', [
+            'direction' => 'received', 'party' => 'Mehta Traders', 'amount' => 2500,
+            'method' => 'Online', 'bank' => 'HDFC Bank', 'date' => '2025-06-21', 'ref' => 'NEFT-1',
+        ])->assertRedirect('/money-received');
+
+        $t = Transaction::where('reference', 'NEFT-1')->first();
+        $this->assertNotNull($t);
+        $this->assertSame('received', $t->direction);
+        $this->assertSame(250000, $t->amount);   // 2500 * 100
+        $this->assertSame('Pending', $t->status); // defaulted
+
+        // create a payment
+        $this->actingAs($admin)->post('/money-paid', [
+            'direction' => 'paid', 'party' => 'Mehta Traders', 'amount' => 1000,
+            'method' => 'Cash', 'bank' => 'HDFC Bank', 'date' => '2025-06-22',
+        ])->assertRedirect('/money-paid');
+        $this->assertSame('paid', Transaction::latest('id')->first()->direction);
+
+        // update the receipt → back to the received list
+        $this->actingAs($admin)->put('/transactions/'.$t->id, [
+            'direction' => 'received', 'party' => 'Mehta Traders', 'amount' => 3000,
+            'method' => 'UPI', 'bank' => 'HDFC Bank', 'date' => '2025-06-21', 'status' => 'Cleared',
+        ])->assertRedirect('/money-received');
+        $this->assertSame(300000, $t->fresh()->amount);
+        $this->assertSame('Cleared', $t->fresh()->status);
+
+        // delete is soft
+        $this->actingAs($admin)->delete('/transactions/'.$t->id)->assertRedirect('/money-received');
+        $this->assertNull(Transaction::find($t->id));
+        $this->assertNotNull(Transaction::withTrashed()->find($t->id));
+    }
+
+    public function test_accountant_cannot_delete_transaction(): void
+    {
+        $this->seed();
+        $accountant = User::where('email', 'accountant@shelvi.test')->first();
+        $t = Transaction::first();
+
+        // accountant has transactions.create/update but not delete
+        $this->actingAs($accountant)->delete('/transactions/'.$t->id)->assertForbidden();
+        $this->assertNotNull(Transaction::find($t->id));
     }
 
     public function test_party_validation_fails(): void

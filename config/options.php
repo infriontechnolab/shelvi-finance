@@ -23,6 +23,17 @@ return [
         'Cleared' => 'Cleared',
         'Bounced' => 'Bounced',
     ],
+    'payment_methods' => [
+        'Online' => 'Online',
+        'UPI' => 'UPI',
+        'Cheque' => 'Cheque',
+        'Cash' => 'Cash',
+    ],
+    'transaction_statuses' => [
+        'Pending' => 'Pending',
+        'Cleared' => 'Cleared',
+        'Bounced' => 'Bounced',
+    ],
     'bank_types' => [
         'Current' => 'Current',
         'Savings' => 'Savings',

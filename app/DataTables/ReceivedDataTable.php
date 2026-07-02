@@ -33,8 +33,10 @@ class ReceivedDataTable extends BaseDataTable
                 'Cleared' => 'success',
                 'Pending' => 'warning',
             ]))
-            // Transaction create/edit/delete UI is not built yet — no row actions.
-            ->addColumn('action', fn ($row) => $this->actions($row['id'], only: []))
+            ->addColumn('action', fn ($row) => $this->gatedActions(
+                $row['id'], 'transactions',
+                route('transactions.edit', $row['tid']), route('transactions.destroy', $row['tid']), $row['id']
+            ))
             ->rawColumns(['id', 'party', 'method', 'bank', 'ref', 'amount', 'status', 'action'])
             ->setRowId('id');
     }

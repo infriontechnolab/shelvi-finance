@@ -31,6 +31,7 @@ class EloquentMoneyRepository implements MoneyRepository
             ->get()
             ->map(fn (Transaction $t) => [
                 'id' => $prefix.'-'.str_pad((string) $t->id, 4, '0', STR_PAD_LEFT),
+                'tid' => $t->id,
                 'date' => $t->txn_date->format('Y-m-d'),
                 'party' => $t->party?->name ?? '—',
                 'method' => $t->method,
