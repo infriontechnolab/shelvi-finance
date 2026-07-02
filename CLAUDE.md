@@ -4,15 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Design-only **finance/receivables** admin panel — Laravel 13 (PHP 8.3) + Tailwind CSS v4 + Blade.
+**Finance/receivables** admin panel — Laravel 13 (PHP 8.3) + Tailwind CSS v4 + Blade.
 **No React, no Alpine.** shadcn/ui visual language reproduced as native Blade components using Tailwind
-utilities. No real DB/auth — pages render in-memory data behind a repository seam (see below), so a real
-database can slot in without touching controllers or views. Brand name in UI is "Shelvi". Domain pages:
-dashboard, bank accounts, party management, money received/paid, party ledger, cheque management, reports.
+utilities. Real database (SQLite in dev) + real auth (Breeze, login-only) + Spatie role/permission RBAC.
+Data flows through a repository seam (see below) so controllers/views stay decoupled from Eloquent.
+Brand name in UI is "Shelvi". Domain pages: dashboard, bank accounts, party management, money
+received/paid, party ledger, cheque management, reports, plus users & roles administration.
 
-Money is formatted with `App\Support\Inr` (Indian lakh/crore grouping, `₹XX,XX,XXX`); dates are stored
-ISO and rendered via `App\Support\Dates::human` (server) / `window.fmtDate` (client) so DataTables sort
-chronologically rather than lexically.
+Money is stored as **paise** (`bigInteger`) and formatted for display with `App\Support\Inr` (Indian
+lakh/crore grouping, `₹XX,XX,XXX`); FormRequests/seeders convert rupees→paise (×100), repositories
+convert paise→rupees so views are unchanged. Dates are stored ISO and rendered via
+`App\Support\Dates::human` (server) / `window.fmtDate` (client) so DataTables sort chronologically.
 
 ## Commands
 
@@ -35,9 +37,10 @@ Shared host has **no npm at runtime**. `public/build/` is compiled locally, comm
 
 ## Architecture
 
-### Routes → Controllers → DataTables (no Eloquent models)
-`routes/web.php` wires resource-style routes to thin controllers (`app/Http/Controllers/`). There are
-no Eloquent models beyond the skeleton `User`; data comes from the repository seam (below). Each list
+### Routes → Controllers → DataTables
+`routes/web.php` wires resource-style routes to thin controllers (`app/Http/Controllers/`), all behind
+`auth` + a per-route `permission:` middleware. Eloquent models live in `app/Models/` (Party, Bank,
+Cheque, Transaction, LedgerEntry, User); list data flows through the repository seam (below). Each list
 view is a Yajra DataTable service (`app/DataTables/`) that `extends BaseDataTable` and supplies
 `query()` (returns a `Collection` from an injected repository), `dataTable()` (column renderers),
 `html()`, and `getColumns()`.
@@ -47,20 +50,35 @@ view is a Yajra DataTable service (`app/DataTables/`) that `extends BaseDataTabl
 - The dashboard hosts widgets with their **own dedicated ajax route**
   (`/dashboard/recent-txns`) so an ajax request never receives the HTML page.
 - Create/edit are **one shared form page** per resource (`pages.x-form`), mode-detected by whether the
-  record var is null; the controller passes the record (or `abort(404)`) plus form options.
+  record var is null; edit/update/destroy use route-model binding. Writes go through a `FormRequest`
+  (`app/Http/Requests/`) with a `toModel()` mapper (rupees→paise, password hashing, etc.).
+- Money Received/Paid are currently **list-only** (no create/edit routes yet).
 
-### Repository seam (swap-in point for a real DB)
+### Repository seam
 Controllers and DataTables depend on **contracts** in `app/Repositories/Contracts/` (Party, Bank,
-Cheque, Ledger, Money, Dashboard, Report), bound to in-memory implementations in
-`app/Repositories/Mock/` via the `REPOSITORIES` map in `AppServiceProvider::register()`. To go live,
-write Eloquent implementations of the same interfaces and flip the map — controllers, DataTables, and
-views don't change. DataTables receive their repository through **constructor injection** (Yajra's base
-has no constructor, so this is safe); the container resolves them because controllers type-hint them.
+Cheque, Ledger, Money, Dashboard, Report), bound to implementations via the `REPOSITORIES` map in
+`AppServiceProvider::register()`. The six domain repos are now **Eloquent** (`app/Repositories/Eloquent/`);
+**Report alone stays a Mock** (`MockReportRepository`, a static catalogue). The old
+`app/Repositories/Mock/` impls are retained as reference — flip the map to swap any back. DataTables
+receive their repository through **constructor injection** (Yajra's base has no constructor, so this is
+safe); the container resolves them because controllers type-hint them.
 
-`App\Data\Mock` is now a **raw-fixture class only** (the seed data). Finders/aggregation/options were
-moved out: static select lists live in `config/options.php`, and aggregates are typed readonly DTOs
-(`App\Data\LedgerSummary`, `App\Data\ChequeStats`) returned by the Ledger/Cheque repositories. Views
-read DTOs as objects (`$summary->opening`, `$stats->bounced`), not arrays.
+Repos return plain arrays/collections shaped for the views, and typed readonly DTOs for aggregates
+(`App\Data\LedgerSummary`, `App\Data\ChequeStats` — read as objects: `$summary->opening`,
+`$stats->bounced`). Static select lists live in `config/options.php`. Dev/test rows are seeded by
+`database/seeders/` (`FinanceDataSeeder` for domain data, `RolesAndPermissionsSeeder` + `UserSeeder`
+for auth); `App\Data\Mock` holds the raw fixtures the seeder draws from.
+
+### Auth & access control
+Breeze (blade) stripped to **login/logout only** — login view rebuilt on the app's own UI kit
+(`resources/views/auth/login.blade.php`); no register/forgot/OAuth. RBAC via **Spatie
+laravel-permission**: every route carries `permission:<name>` (aliased in `bootstrap/app.php`), and Blade
+gates with `@can`. Three roles seeded: **superadmin** (all perms — a *secret owner account*, kept out of
+every UI surface: users list, roles list, role pickers, direct-edit URLs 404), **admin** (all except
+`users.*`/`roles.*`), **accountant** (operate-only subset). One source of truth in `App\Support\Access`
+(the hidden role name, hidden permission groups, `assignablePermissionNames()`). Users have an
+`is_active` flag. The permission matrix (`pages/roles-form`) never shows `users.*`/`roles.*`, so no
+visible role can be granted them even via a crafted request.
 
 ### BaseDataTable (`app/DataTables/BaseDataTable.php`)
 Holds all shared config and cell renderers so concrete tables stay thin:
@@ -91,7 +109,9 @@ owns the toggle + `localStorage` (key `shelvi-theme`). Tailwind dark variant is 
 ### JS bundle (`resources/js/app.js`)
 jQuery + `datatables.net` core (no default DataTables theme — styled via app.css tokens) + Lucide
 icons. Icons render `<i data-lucide="...">` placeholders into SVG; `renderIcons()` re-runs on every
-`draw.dt` so ajax-injected rows (action buttons) get icons. Fonts (Manrope, Plus Jakarta Sans) are
+`draw.dt` so ajax-injected rows (action buttons) get icons. **Gotcha:** `createIcons()` uses a *curated*
+`lucideIcons` set — a new icon name must be added to both the `import {…} from 'lucide'` and the
+`lucideIcons` map in `app.js`, or it silently fails to render. Fonts (Manrope, Plus Jakarta Sans) are
 self-hosted by the Vite build via `bunny()` in `vite.config.js` — no runtime CDN.
 
 ### Blade UI kit & shell
@@ -105,7 +125,22 @@ The sidebar reads its nav tree from **`config/navigation.php`** (not inline).
 Create/edit forms carry `data-validate`; `initFormValidation()` in `app.js` wires
 [jquery-validation](https://jqueryvalidation.org/) (keyed by input `name` — every field needs a unique
 `name`, not just `id`). Required combobox hidden inputs emit `data-rule-required`. Use `:user-invalid`
-(not `:invalid`) for error styling so blank required fields don't flag on first paint. Client validation
-is **not** security — add a server `FormRequest` when real write routes land. Deletes are wired to a
-confirm dialog via `data-confirm` (handled in `app.js`); in this design-only build delete just removes
-the row from the DOM.
+(not `:invalid`) for error styling so blank required fields don't flag on first paint. On a valid form
+the `submitHandler` calls `form.submit()` to perform the real POST (client validation is **not**
+security — every write is guarded by a server `FormRequest`). Deletes are wired to a confirm dialog via
+`data-confirm` (handled in `app.js`); on confirm it submits the enclosing method-spoofed DELETE form,
+which hits the controller.
+
+### Soft deletes
+Party, Bank, Cheque, Transaction, LedgerEntry use the `SoftDeletes` trait (`deleted_at` column). A
+delete sets `deleted_at` — the row stays (recoverable, FK-safe, no cascade crash) and is auto-hidden by
+the global scope. Child lists that show a parent's name (cheques→party/bank, money→party/bank, dashboard
+widgets, bank statement) eager-load the parent with `withTrashed()` so names survive a parent's
+soft-delete. Aggregates (dashboard totals, ledger party pick) correctly exclude trashed rows. No restore
+UI yet — recover via `Model::withTrashed()->restore()`.
+
+### Flash toasts
+Any controller flash (`->with('success'|'error'|'warning'|'info', …)`) is surfaced as a colored toast
+top-right by `components/toast.blade.php` + `app.js`. One `<template>` per variant keeps all Tailwind
+classes in scanned Blade (JS clones, never composes class strings). `window.showToast(message, type)` is
+exposed for client-side use.
