@@ -27,7 +27,7 @@ class ChequesDataTable extends BaseDataTable
                 'Pending' => 'warning',
                 'Bounced' => 'danger',
             ]))
-            ->addColumn('action', fn ($row) => $this->actions($row['no'], editUrl: route('cheques.edit', $row['no'])))
+            ->addColumn('action', fn ($row) => $this->gatedActions($row['id'], 'cheques', route('cheques.edit', $row['id']), route('cheques.destroy', $row['id']), '#'.$row['no']))
             ->rawColumns(['no', 'party', 'bank', 'amount', 'status', 'action'])
             ->setRowId('no');
     }

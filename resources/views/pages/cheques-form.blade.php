@@ -1,7 +1,8 @@
 @php
     $isEdit = $cheque !== null;
     $title = $isEdit ? 'Edit Cheque' : 'New Cheque';
-    $val = fn (string $key, $default = '') => $cheque[$key] ?? $default;
+    // Prefer old() so server-side validation errors repopulate the form.
+    $val = fn (string $key, $default = '') => old($key, $cheque[$key] ?? $default);
 @endphp
 
 <x-layouts.admin :title="$title">
@@ -18,7 +19,22 @@
             <x-ui.card-description>Fields marked <span class="text-destructive">*</span> are required.</x-ui.card-description>
         </x-ui.card-header>
         <x-ui.card-content>
-            <form class="space-y-5" data-validate>
+            <form class="space-y-5" data-validate method="POST"
+                action="{{ $isEdit ? route('cheques.update', $cheque['id']) : route('cheques.store') }}">
+                @csrf
+                @if ($isEdit) @method('PUT') @endif
+
+                @if ($errors->any())
+                    <div class="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                        <p class="font-medium">Please fix the following:</p>
+                        <ul class="mt-1 list-inside list-disc">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     <div class="space-y-1.5">
                         <x-ui.label for="c-no">Cheque No <span class="text-destructive">*</span></x-ui.label>

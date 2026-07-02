@@ -19,7 +19,7 @@
                         {{ ($k['isCount'] ?? false) ? $k['value'] : \App\Support\Inr::format($k['value']) }}
                     </div>
                     <p class="mt-1 text-xs text-muted-foreground">
-                        <span class="{{ $k['up'] ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive' }}">{{ $k['trend'] }}</span>
+                        <span class="{{ $k['up'] ? 'text-emerald-600' : 'text-destructive' }}">{{ $k['trend'] }}</span>
                         vs last period
                     </p>
                 </x-ui.card-content>
@@ -72,7 +72,7 @@
                     @foreach ($pending as $p)
                         <li class="flex items-center justify-between py-3">
                             <div class="flex items-center gap-3">
-                                <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                                <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-xs font-semibold text-amber-600">
                                     {{ strtoupper(substr($p['party'], 0, 1)) }}
                                 </span>
                                 <div>

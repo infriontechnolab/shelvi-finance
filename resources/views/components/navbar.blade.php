@@ -26,19 +26,33 @@
         </x-ui.button>
 
         {{-- User menu --}}
+        @php
+            $user = auth()->user();
+            $initials = collect(explode(' ', $user?->name ?? 'User'))
+                ->filter()->map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)))
+                ->take(2)->implode('');
+        @endphp
         <x-ui.dropdown id="user-menu">
             <x-slot:trigger>
                 <x-ui.button variant="ghost" size="icon" class="rounded-full">
-                    <x-ui.avatar initials="SV" size="size-8" />
+                    <x-ui.avatar :initials="$initials" size="size-8" />
                 </x-ui.button>
             </x-slot:trigger>
 
-            <div class="px-2 py-1.5 text-sm font-semibold">My Account</div>
+            <div class="px-2 py-1.5">
+                <p class="text-sm font-semibold leading-tight">{{ $user?->name }}</p>
+                <p class="truncate text-xs text-muted-foreground">{{ $user?->email }}</p>
+                @if ($user && $user->roles->isNotEmpty())
+                    <p class="mt-0.5 text-[11px] font-medium uppercase tracking-wide text-primary">{{ $user->roles->pluck('name')->implode(', ') }}</p>
+                @endif
+            </div>
             <x-ui.dropdown-separator />
-            <x-ui.dropdown-item href="#"><x-ui.icon name="user" /> Profile</x-ui.dropdown-item>
-            <x-ui.dropdown-item href="#"><x-ui.icon name="settings" /> Settings</x-ui.dropdown-item>
-            <x-ui.dropdown-separator />
-            <x-ui.dropdown-item href="#"><x-ui.icon name="logout" /> Log out</x-ui.dropdown-item>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="relative flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground [&_svg]:size-4 [&_svg]:text-muted-foreground">
+                    <x-ui.icon name="logout" /> Log out
+                </button>
+            </form>
         </x-ui.dropdown>
     </div>
 </header>

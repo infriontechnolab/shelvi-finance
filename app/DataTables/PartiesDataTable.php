@@ -33,7 +33,7 @@ class PartiesDataTable extends BaseDataTable
                 'Active' => 'success',
                 'Inactive' => 'neutral',
             ]))
-            ->addColumn('action', fn ($row) => $this->actions($row['name'], editUrl: route('parties.edit', $row['name'])))
+            ->addColumn('action', fn ($row) => $this->gatedActions($row['id'], 'parties', route('parties.edit', $row['id']), route('parties.destroy', $row['id']), $row['name']))
             ->rawColumns(['name', 'category', 'phone', 'opening', 'current', 'limit', 'status', 'action'])
             ->setRowId('name');
     }

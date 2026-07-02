@@ -26,6 +26,10 @@
         'mail' => 'mail',
         'check' => 'check',
         'x' => 'x',
+        'circle-check' => 'circle-check',
+        'alert-circle' => 'alert-circle',
+        'triangle-alert' => 'triangle-alert',
+        'info' => 'info',
     ];
 
     $lucide = $map[$name] ?? $name;

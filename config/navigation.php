@@ -13,4 +13,8 @@ return [
     ['label' => 'Party Ledger', 'icon' => 'book-open', 'route' => 'ledger'],
     ['label' => 'Cheque Management', 'icon' => 'wallet', 'route' => 'cheques'],
     ['label' => 'Reports', 'icon' => 'file-text', 'route' => 'reports'],
+
+    // Admin-only — hidden from users without the permission (see sidebar filter).
+    ['label' => 'Users', 'icon' => 'users', 'route' => 'users', 'permission' => 'users.view'],
+    ['label' => 'Roles', 'icon' => 'shield-check', 'route' => 'roles', 'permission' => 'roles.view'],
 ];

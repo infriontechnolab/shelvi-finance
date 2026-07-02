@@ -1,7 +1,9 @@
 <x-layouts.admin title="Bank Accounts">
     <x-slot:subtitle>Balances and statements across all linked accounts.</x-slot:subtitle>
     <x-slot:actions>
-        <x-ui.button size="sm" href="{{ route('banks.create') }}"><x-ui.icon name="plus" /> Add account</x-ui.button>
+        @can('banks.create')
+            <x-ui.button size="sm" href="{{ route('banks.create') }}"><x-ui.icon name="plus" /> Add account</x-ui.button>
+        @endcan
     </x-slot:actions>
 
     {{-- Account cards --}}
@@ -18,11 +20,24 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-1">
-                            <span class="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Active</span>
-                            <a href="{{ route('banks.edit', $b['id']) }}" title="Edit account"
-                                class="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
-                                <x-ui.icon name="pencil" class="size-4" />
-                            </a>
+                            <span class="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-600">Active</span>
+                            @can('banks.update')
+                                <a href="{{ route('banks.edit', $b['id']) }}" title="Edit account"
+                                    class="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                                    <x-ui.icon name="pencil" class="size-4" />
+                                </a>
+                            @endcan
+                            @can('banks.delete')
+                                <form method="POST" action="{{ route('banks.destroy', $b['id']) }}" class="inline" data-delete-form>
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" title="Delete account"
+                                        data-confirm="Delete {{ $b['name'] }}? This action cannot be undone."
+                                        class="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
+                                        <x-ui.icon name="trash-2" class="size-4" />
+                                    </button>
+                                </form>
+                            @endcan
                         </div>
                     </div>
                     <div class="mt-4">

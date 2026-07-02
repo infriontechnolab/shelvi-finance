@@ -144,14 +144,39 @@ abstract class BaseDataTable extends DataTable
      * Row action buttons. Design-only: Edit links to its edit page (or '#'),
      * Delete opens the confirm dialog (handled in app.js). $only picks which to show.
      */
-    protected function actions(string $id, array $only = ['edit', 'delete'], ?string $editUrl = null): string
+    /**
+     * Permission-aware row actions: edit shows only with {resource}.update,
+     * delete only with {resource}.delete. Keeps the action column in sync with RBAC.
+     */
+    protected function gatedActions(string $id, string $resource, ?string $editUrl = null, ?string $deleteUrl = null, ?string $label = null): string
+    {
+        $user = auth()->user();
+        $only = [];
+        if ($user?->can("$resource.update")) {
+            $only[] = 'edit';
+        }
+        if ($user?->can("$resource.delete")) {
+            $only[] = 'delete';
+        }
+
+        return $this->actions(
+            $id,
+            $only,
+            editUrl: in_array('edit', $only, true) ? $editUrl : null,
+            deleteUrl: in_array('delete', $only, true) ? $deleteUrl : null,
+            label: $label,
+        );
+    }
+
+    protected function actions(string $id, array $only = ['edit', 'delete'], ?string $editUrl = null, ?string $deleteUrl = null, ?string $label = null): string
     {
         return $this->cell('actions', [
             'id' => $id,
             'editUrl' => $editUrl,
+            'deleteUrl' => $deleteUrl,
             'showEdit' => in_array('edit', $only, true),
             'showDelete' => in_array('delete', $only, true),
-            'deleteMessage' => 'Delete "'.$id.'"? This action cannot be undone.',
+            'deleteMessage' => 'Delete "'.($label ?? $id).'"? This action cannot be undone.',
         ]);
     }
 }

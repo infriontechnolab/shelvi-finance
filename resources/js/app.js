@@ -11,7 +11,8 @@ import {
     Sun, Moon, Menu, ChevronDown, LogOut, Plus, TrendingUp, TrendingDown, Ellipsis,
     User, Mail, Check, ChevronsUpDown, X, Pencil, Trash2,
     Landmark, Wallet, FileText, ArrowLeftRight, BookOpen, Calendar, AlertCircle,
-    ArrowDownLeft, ArrowUpRight, ArrowRight, ArrowLeft,
+    ArrowDownLeft, ArrowUpRight, ArrowRight, ArrowLeft, Eye, EyeOff, ShieldCheck,
+    CircleCheck, TriangleAlert, Info,
 } from 'lucide';
 
 window.$ = window.jQuery = $;
@@ -25,7 +26,8 @@ const lucideIcons = {
     Sun, Moon, Menu, ChevronDown, LogOut, Plus, TrendingUp, TrendingDown, Ellipsis,
     User, Mail, Check, ChevronsUpDown, X, Pencil, Trash2,
     Landmark, Wallet, FileText, ArrowLeftRight, BookOpen, Calendar, AlertCircle,
-    ArrowDownLeft, ArrowUpRight, ArrowRight, ArrowLeft,
+    ArrowDownLeft, ArrowUpRight, ArrowRight, ArrowLeft, Eye, EyeOff, ShieldCheck,
+    CircleCheck, TriangleAlert, Info,
 };
 function renderIcons() {
     createIcons({ icons: lucideIcons });
@@ -61,9 +63,10 @@ function initFormValidation() {
             ignore: [],
             errorElement: 'p',
             errorClass: 'mt-1 text-xs font-medium text-destructive',
-            submitHandler() {
-                // Design-only: no backend. Block the POST, keep the page.
-                return false;
+            submitHandler(form) {
+                // Valid: submit for real. Native submit() bypasses re-validation
+                // (no recursion back into this handler).
+                form.submit();
             },
             errorPlacement(error, element) {
                 const combo = comboWrapper(element);
@@ -147,21 +150,35 @@ document.addEventListener('click', (e) => {
 });
 
 // Confirm-gated actions (e.g. row Delete) via a themed dialog (markup in admin layout).
-// Design-only: there are no CRUD routes, so "delete" just drops the row from the
-// current view and toasts. A real app would POST/DELETE here instead.
+// If the trigger sits inside a form (a real DELETE), the confirmed action submits
+// that form; otherwise it falls back to removing the row from the current view.
 const confirmModal = document.querySelector('[data-confirm-modal]');
 let pendingConfirmEl = null;
 
-function showToast(message) {
-    const toast = document.querySelector('[data-toast]');
-    if (!toast) {
+// Global toast. type ∈ success | error | warning | info (falls back to success).
+// Clones the matching Blade <template> so all styling stays in scanned markup.
+function showToast(message, type = 'success') {
+    const region = document.querySelector('[data-toast-region]');
+    const tpl = document.querySelector(`[data-toast-tpl="${type}"]`)
+        || document.querySelector('[data-toast-tpl="success"]');
+    if (!region || !tpl) {
         return;
     }
-    toast.querySelector('[data-toast-message]').textContent = message;
-    toast.hidden = false;
-    clearTimeout(showToast._t);
-    showToast._t = setTimeout(() => { toast.hidden = true; }, 2500);
+    const node = tpl.content.firstElementChild.cloneNode(true);
+    node.querySelector('[data-toast-message]').textContent = message;
+    region.appendChild(node);
+    renderIcons();
+
+    const dismiss = () => {
+        clearTimeout(timer);
+        node.style.opacity = '0';
+        node.style.transition = 'opacity 150ms';
+        setTimeout(() => node.remove(), 150);
+    };
+    const timer = setTimeout(dismiss, type === 'error' ? 6000 : 4000);
+    node.querySelector('[data-toast-close]')?.addEventListener('click', dismiss);
 }
+window.showToast = showToast;
 
 function openConfirm(el) {
     if (!confirmModal) {
@@ -184,8 +201,13 @@ function closeConfirm() {
 }
 
 function runConfirmedDelete(el) {
-    // Design-only: remove the row from the current view (no redraw — serverSide would
-    // re-fetch the static row straight back). Falls back to removing the element's row.
+    // Real delete: submit the enclosing form (method-spoofed DELETE + CSRF).
+    const form = el.closest('form[data-delete-form]') || el.closest('form');
+    if (form) {
+        form.submit();
+        return;
+    }
+    // Fallback (rows without a delete route): drop the row from the current view.
     const row = el.closest('tr');
     if (row && window.jQuery) {
         $(row).fadeOut(150, function () { $(this).remove(); });
@@ -220,6 +242,21 @@ document.addEventListener('keydown', (e) => {
         closeConfirm();
     }
 });
+
+// Surface server flash messages (success/error/warning/info) after any redirect.
+(function showFlashToasts() {
+    const el = document.querySelector('[data-flash-json]');
+    if (!el) {
+        return;
+    }
+    let flashes;
+    try {
+        flashes = JSON.parse(el.textContent);
+    } catch {
+        return;
+    }
+    Object.entries(flashes).forEach(([type, message]) => message && showToast(message, type));
+})();
 
 // shadcn-style combobox (Blade-native, no React). Searchable popover whose
 // hidden input dispatches `change` so DataTable filters etc. can react.

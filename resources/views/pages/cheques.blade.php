@@ -3,14 +3,16 @@
     <x-slot:actions>
         <x-ui.combobox id="chequeStatus" placeholder="All statuses" searchPlaceholder="Filter status…"
             :options="['' => 'All statuses', 'Pending' => 'Pending', 'Cleared' => 'Cleared', 'Bounced' => 'Bounced']" />
-        <x-ui.button size="sm" href="{{ route('cheques.create') }}"><x-ui.icon name="plus" /> New cheque</x-ui.button>
+        @can('cheques.create')
+            <x-ui.button size="sm" href="{{ route('cheques.create') }}"><x-ui.icon name="plus" /> New cheque</x-ui.button>
+        @endcan
     </x-slot:actions>
 
     @php
         $tiles = [
             ['label' => 'Total Cheques', 'value' => $stats->total, 'tone' => ''],
-            ['label' => 'Pending', 'value' => $stats->pending, 'tone' => 'text-amber-600 dark:text-amber-400'],
-            ['label' => 'Cleared', 'value' => $stats->cleared, 'tone' => 'text-emerald-600 dark:text-emerald-400'],
+            ['label' => 'Pending', 'value' => $stats->pending, 'tone' => 'text-amber-600'],
+            ['label' => 'Cleared', 'value' => $stats->cleared, 'tone' => 'text-emerald-600'],
             ['label' => 'Bounced', 'value' => $stats->bounced, 'tone' => 'text-destructive'],
         ];
     @endphp

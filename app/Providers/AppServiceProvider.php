@@ -9,29 +9,30 @@ use App\Repositories\Contracts\LedgerRepository;
 use App\Repositories\Contracts\MoneyRepository;
 use App\Repositories\Contracts\PartyRepository;
 use App\Repositories\Contracts\ReportRepository;
-use App\Repositories\Mock\MockBankRepository;
-use App\Repositories\Mock\MockChequeRepository;
-use App\Repositories\Mock\MockDashboardRepository;
-use App\Repositories\Mock\MockLedgerRepository;
-use App\Repositories\Mock\MockMoneyRepository;
-use App\Repositories\Mock\MockPartyRepository;
+use App\Repositories\Eloquent\EloquentBankRepository;
+use App\Repositories\Eloquent\EloquentChequeRepository;
+use App\Repositories\Eloquent\EloquentDashboardRepository;
+use App\Repositories\Eloquent\EloquentLedgerRepository;
+use App\Repositories\Eloquent\EloquentMoneyRepository;
+use App\Repositories\Eloquent\EloquentPartyRepository;
 use App\Repositories\Mock\MockReportRepository;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
     /**
-     * Repository contract → implementation map. Swap the Mock* values for
-     * Eloquent* implementations when a real database lands — nothing else
-     * (controllers, DataTables, views) needs to change.
+     * Repository contract → implementation map. Data-backed resources use the
+     * Eloquent implementations; the report catalogue is a fixed list, so it
+     * stays on the Mock (config-style) implementation. Controllers, DataTables
+     * and views are agnostic to which implementation is bound.
      */
     private const REPOSITORIES = [
-        PartyRepository::class => MockPartyRepository::class,
-        BankRepository::class => MockBankRepository::class,
-        ChequeRepository::class => MockChequeRepository::class,
-        LedgerRepository::class => MockLedgerRepository::class,
-        MoneyRepository::class => MockMoneyRepository::class,
-        DashboardRepository::class => MockDashboardRepository::class,
+        PartyRepository::class => EloquentPartyRepository::class,
+        BankRepository::class => EloquentBankRepository::class,
+        ChequeRepository::class => EloquentChequeRepository::class,
+        LedgerRepository::class => EloquentLedgerRepository::class,
+        MoneyRepository::class => EloquentMoneyRepository::class,
+        DashboardRepository::class => EloquentDashboardRepository::class,
         ReportRepository::class => MockReportRepository::class,
     ];
 

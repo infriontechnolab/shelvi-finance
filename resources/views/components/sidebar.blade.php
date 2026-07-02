@@ -1,6 +1,19 @@
 @php
-    // Nav comes from config/navigation.php (data, not markup).
-    $nav = config('navigation', []);
+    // Nav comes from config/navigation.php (data, not markup). Items (and children)
+    // may carry a `permission`; those are hidden from users who lack it.
+    $me = auth()->user();
+    $canSee = fn ($item) => empty($item['permission']) || $me?->can($item['permission']);
+    $nav = collect(config('navigation', []))
+        ->filter($canSee)
+        ->map(function ($item) use ($canSee) {
+            if (! empty($item['children'])) {
+                $item['children'] = collect($item['children'])->filter($canSee)->values()->all();
+            }
+
+            return $item;
+        })
+        ->reject(fn ($item) => isset($item['children']) && count($item['children']) === 0 && ! isset($item['route']))
+        ->values();
     $childActive = fn ($item) => collect($item['children'] ?? [])->contains(fn ($c) => request()->routeIs($c['route']));
     $rowBase = 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors group-data-[collapsed=true]/sidebar:lg:justify-center group-data-[collapsed=true]/sidebar:lg:px-0';
 @endphp
@@ -79,11 +92,15 @@
     </nav>
 
     <div class="border-t border-sidebar-border p-3">
+        @php
+            $initials = collect(explode(' ', $me?->name ?? 'User'))
+                ->filter()->map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)))->take(2)->implode('');
+        @endphp
         <div class="flex items-center gap-3 rounded-md px-3 py-2 group-data-[collapsed=true]/sidebar:lg:justify-center group-data-[collapsed=true]/sidebar:lg:px-0">
-            <x-ui.avatar initials="SV" />
+            <x-ui.avatar :initials="$initials" />
             <div class="min-w-0 flex-1 group-data-[collapsed=true]/sidebar:lg:hidden">
-                <p class="truncate text-sm font-medium">Shelvi Admin</p>
-                <p class="truncate text-xs text-muted-foreground">admin@shelvi.app</p>
+                <p class="truncate text-sm font-medium">{{ $me?->name }}</p>
+                <p class="truncate text-xs text-muted-foreground">{{ $me?->email }}</p>
             </div>
         </div>
     </div>

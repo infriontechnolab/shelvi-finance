@@ -3,7 +3,9 @@
     <x-slot:actions>
         <x-ui.combobox id="partyCategory" placeholder="All categories" searchPlaceholder="Filter category…"
             :options="['' => 'All categories', 'Customer' => 'Customer', 'Vendor' => 'Vendor', 'Finance Co' => 'Finance Co', 'Agency' => 'Agency']" />
-        <x-ui.button size="sm" href="{{ route('parties.create') }}"><x-ui.icon name="plus" /> New party</x-ui.button>
+        @can('parties.create')
+            <x-ui.button size="sm" href="{{ route('parties.create') }}"><x-ui.icon name="plus" /> New party</x-ui.button>
+        @endcan
     </x-slot:actions>
 
     <div id="parties-table-pagelen" hidden>
