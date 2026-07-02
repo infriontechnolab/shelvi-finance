@@ -30,6 +30,7 @@ class MoneyController extends Controller
     public function store(TransactionRequest $request): RedirectResponse
     {
         $transaction = Transaction::create($request->toModel());
+        $this->postLedger($transaction);
         $noun = $transaction->direction === 'received' ? 'Receipt' : 'Payment';
 
         return redirect()->to($this->listRoute($transaction))->with('success', "{$noun} recorded.");
@@ -46,6 +47,7 @@ class MoneyController extends Controller
     public function update(TransactionRequest $request, Transaction $transaction): RedirectResponse
     {
         $transaction->update($request->toModel());
+        $this->postLedger($transaction);
         $noun = $transaction->direction === 'received' ? 'Receipt' : 'Payment';
 
         return redirect()->to($this->listRoute($transaction))->with('success', "{$noun} updated.");
@@ -54,9 +56,33 @@ class MoneyController extends Controller
     public function destroy(Transaction $transaction): RedirectResponse
     {
         $route = $this->listRoute($transaction);
+        // Soft-delete the linked ledger line too so the party balance reverts.
+        $transaction->ledgerEntry()->delete();
         $transaction->delete();
 
         return redirect()->to($route)->with('success', 'Entry deleted.');
+    }
+
+    /**
+     * Keep the party-ledger line in sync with a money movement so balances stay
+     * correct. Received reduces a receivable (credit); paid reduces a payable (debit).
+     */
+    private function postLedger(Transaction $transaction): void
+    {
+        if (! $transaction->party_id) {
+            return; // non-party line (e.g. bank charge) — nothing to post
+        }
+
+        $received = $transaction->direction === 'received';
+
+        $transaction->ledgerEntry()->updateOrCreate([], [
+            'party_id' => $transaction->party_id,
+            'entry_date' => $transaction->txn_date,
+            'particulars' => $received ? 'Amount received' : 'Amount paid',
+            'vch' => $transaction->reference ?: (($received ? 'REC-' : 'PAY-').$transaction->id),
+            'debit' => $received ? 0 : $transaction->amount,
+            'credit' => $received ? $transaction->amount : 0,
+        ]);
     }
 
     /** Back to the list the entry belongs to (received vs paid). */

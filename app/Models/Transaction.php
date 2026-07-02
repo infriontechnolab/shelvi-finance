@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -38,6 +39,12 @@ class Transaction extends Model
     public function cheque(): BelongsTo
     {
         return $this->belongsTo(Cheque::class);
+    }
+
+    /** The party-ledger line this money movement posts (kept in sync by MoneyController). */
+    public function ledgerEntry(): HasOne
+    {
+        return $this->hasOne(LedgerEntry::class);
     }
 
     public function scopeReceived(Builder $q): Builder

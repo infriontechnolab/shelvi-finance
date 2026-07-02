@@ -122,6 +122,39 @@ class WritesTest extends TestCase
         $this->assertNotNull(Transaction::withTrashed()->find($t->id));
     }
 
+    public function test_transaction_posts_and_syncs_the_party_ledger(): void
+    {
+        $admin = $this->admin();
+        $party = Party::where('name', 'Mehta Traders')->first();
+        $before = $party->currentBalance();
+
+        // receipt ₹2,500 → credit → receivable drops by 250000 paise
+        $this->actingAs($admin)->post('/money-received', [
+            'direction' => 'received', 'party' => 'Mehta Traders', 'amount' => 2500,
+            'method' => 'Online', 'bank' => 'HDFC Bank', 'date' => '2025-06-21', 'ref' => 'LGR-1',
+        ])->assertRedirect('/money-received');
+
+        $t = Transaction::where('reference', 'LGR-1')->first();
+        $entry = $t->ledgerEntry()->first();
+        $this->assertNotNull($entry);
+        $this->assertSame(250000, $entry->credit);
+        $this->assertSame(0, $entry->debit);
+        $this->assertSame($before - 250000, $party->fresh()->currentBalance());
+
+        // edit amount → the ledger line re-syncs, no duplicate
+        $this->actingAs($admin)->put('/transactions/'.$t->id, [
+            'direction' => 'received', 'party' => 'Mehta Traders', 'amount' => 4000,
+            'method' => 'Online', 'bank' => 'HDFC Bank', 'date' => '2025-06-21', 'status' => 'Pending',
+        ])->assertRedirect('/money-received');
+        $this->assertSame(1, $t->ledgerEntry()->count());
+        $this->assertSame(400000, $t->ledgerEntry()->first()->credit);
+        $this->assertSame($before - 400000, $party->fresh()->currentBalance());
+
+        // delete → ledger line soft-deleted → balance reverts
+        $this->actingAs($admin)->delete('/transactions/'.$t->id)->assertRedirect('/money-received');
+        $this->assertSame($before, $party->fresh()->currentBalance());
+    }
+
     public function test_accountant_cannot_delete_transaction(): void
     {
         $this->seed();
