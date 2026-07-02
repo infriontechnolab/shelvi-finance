@@ -11,4 +11,10 @@ class MockReportRepository implements ReportRepository
     {
         return Mock::reportTypes();
     }
+
+    /** Reference impl generates nothing — see EloquentReportRepository. */
+    public function generate(string $slug, string $period): ?array
+    {
+        return null;
+    }
 }

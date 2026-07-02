@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
 
     // Reports.
     Route::get('/reports', [ReportController::class, 'index'])->name('reports')->middleware('permission:reports.view');
+    Route::get('/reports/{report}', [ReportController::class, 'show'])->name('reports.show')->middleware('permission:reports.view');
 
     // User Management (admin).
     Route::get('/users', [UserController::class, 'index'])->name('users')->middleware('permission:users.view');
