@@ -50,7 +50,7 @@
                     </div>
                     <div class="space-y-1.5">
                         <x-ui.label for="r-date">Date <span class="text-destructive">*</span></x-ui.label>
-                        <x-ui.input id="r-date" name="date" type="date" required value="{{ old('date') }}" class="user-invalid:border-destructive user-invalid:ring-destructive/20" />
+                        <x-ui.datepicker id="r-date" name="date" :value="old('date')" :required="true" />
                     </div>
                     <div class="flex gap-2 pt-2">
                         <x-ui.button type="submit" size="sm" class="flex-1"><x-ui.icon name="check" /> Save receipt</x-ui.button>

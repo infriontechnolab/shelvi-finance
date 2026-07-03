@@ -12,7 +12,7 @@ import {
     User, Mail, Check, ChevronsUpDown, X, Pencil, Trash2,
     Landmark, Wallet, FileText, ArrowLeftRight, BookOpen, Calendar, AlertCircle,
     ArrowDownLeft, ArrowUpRight, ArrowRight, ArrowLeft, Eye, EyeOff, ShieldCheck,
-    CircleCheck, TriangleAlert, Info, FileSpreadsheet, RotateCcw,
+    CircleCheck, TriangleAlert, Info, FileSpreadsheet, RotateCcw, ChevronLeft, ChevronRight,
 } from 'lucide';
 
 window.$ = window.jQuery = $;
@@ -27,7 +27,7 @@ const lucideIcons = {
     User, Mail, Check, ChevronsUpDown, X, Pencil, Trash2,
     Landmark, Wallet, FileText, ArrowLeftRight, BookOpen, Calendar, AlertCircle,
     ArrowDownLeft, ArrowUpRight, ArrowRight, ArrowLeft, Eye, EyeOff, ShieldCheck,
-    CircleCheck, TriangleAlert, Info, FileSpreadsheet, RotateCcw,
+    CircleCheck, TriangleAlert, Info, FileSpreadsheet, RotateCcw, ChevronLeft, ChevronRight,
 };
 function renderIcons() {
     createIcons({ icons: lucideIcons });
@@ -51,8 +51,13 @@ $(document).on('draw.dt', renderIcons);
 // the initializer stays generic. Custom comboboxes are a hidden input + button,
 // so ignore:[] includes them and highlight/errorPlacement target the trigger/wrapper.
 const ERR_RING = ['border-destructive', 'ring-1', 'ring-destructive/20'];
+// Custom fields (combobox, datepicker) are a hidden input + a trigger button —
+// place errors after the wrapper and ring the trigger, not the hidden input.
 function comboWrapper(el) {
-    return $(el).closest('[data-combobox]');
+    return $(el).closest('[data-combobox], [data-datepicker]');
+}
+function wrapperTrigger($w) {
+    return $w.find('[data-combobox-trigger], [data-datepicker-trigger]');
 }
 function initFormValidation() {
     if (!$.fn.validate) {
@@ -74,16 +79,109 @@ function initFormValidation() {
             },
             highlight(element) {
                 const combo = comboWrapper(element);
-                (combo.length ? combo.find('[data-combobox-trigger]') : $(element)).addClass(ERR_RING);
+                (combo.length ? wrapperTrigger(combo) : $(element)).addClass(ERR_RING);
             },
             unhighlight(element) {
                 const combo = comboWrapper(element);
-                (combo.length ? combo.find('[data-combobox-trigger]') : $(element)).removeClass(ERR_RING);
+                (combo.length ? wrapperTrigger(combo) : $(element)).removeClass(ERR_RING);
             },
         });
     });
 }
 document.addEventListener('DOMContentLoaded', initFormValidation);
+
+// Datepicker — styled calendar popover (replaces native <input type=date>).
+// Value is kept as Y-m-d in a hidden input (what forms/validation expect); the
+// trigger button shows a human label. Delegated events, so ajax-injected forms
+// work too. The visible month is stashed on the popover dataset (vy/vm).
+function dpHuman(iso) {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-');
+    return d + ' ' + (DT_MONTHS[parseInt(m, 10) - 1] || '') + ' ' + y;
+}
+function dpISO(y, m, d) {
+    return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+}
+function dpRender(picker) {
+    const pop = picker.querySelector('[data-datepicker-popover]');
+    const selected = picker.querySelector('[data-datepicker-value]').value || '';
+    let vy = parseInt(pop.dataset.vy, 10);
+    let vm = parseInt(pop.dataset.vm, 10);
+    if (Number.isNaN(vy) || Number.isNaN(vm)) {
+        const base = selected ? new Date(selected + 'T00:00:00') : new Date();
+        vy = base.getFullYear();
+        vm = base.getMonth();
+        pop.dataset.vy = vy;
+        pop.dataset.vm = vm;
+    }
+    picker.querySelector('[data-datepicker-title]').textContent = DT_MONTHS[vm] + ' ' + vy;
+
+    const offset = new Date(vy, vm, 1).getDay();          // 0 = Sunday
+    const days = new Date(vy, vm + 1, 0).getDate();
+    const todayISO = dpISO(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+    let html = '';
+    for (let i = 0; i < offset; i++) html += '<span></span>';
+    for (let d = 1; d <= days; d++) {
+        const iso = dpISO(vy, vm, d);
+        const sel = iso === selected;
+        const cls = sel
+            ? 'bg-primary text-primary-foreground'
+            : 'hover:bg-accent hover:text-accent-foreground' + (iso === todayISO ? ' border border-border' : '');
+        html += '<button type="button" data-datepicker-day="' + iso + '" class="inline-flex size-8 items-center justify-center rounded-md text-sm transition-colors ' + cls + '">' + d + '</button>';
+    }
+    picker.querySelector('[data-datepicker-grid]').innerHTML = html;
+    renderIcons();
+}
+document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('[data-datepicker-trigger]');
+    const openPops = document.querySelectorAll('[data-datepicker-popover]:not([hidden])');
+
+    if (trigger) {
+        const picker = trigger.closest('[data-datepicker]');
+        const pop = picker.querySelector('[data-datepicker-popover]');
+        const willOpen = pop.hidden;
+        openPops.forEach((p) => { if (p !== pop) p.hidden = true; });
+        if (willOpen) {
+            delete pop.dataset.vy;   // re-centre on the selected value / today
+            delete pop.dataset.vm;
+            dpRender(picker);
+            pop.hidden = false;
+        } else {
+            pop.hidden = true;
+        }
+        return;
+    }
+
+    const nav = e.target.closest('[data-datepicker-prev], [data-datepicker-next]');
+    if (nav) {
+        const picker = nav.closest('[data-datepicker]');
+        const pop = picker.querySelector('[data-datepicker-popover]');
+        let vy = parseInt(pop.dataset.vy, 10);
+        let vm = parseInt(pop.dataset.vm, 10) + (nav.matches('[data-datepicker-prev]') ? -1 : 1);
+        if (vm < 0) { vm = 11; vy--; }
+        if (vm > 11) { vm = 0; vy++; }
+        pop.dataset.vy = vy;
+        pop.dataset.vm = vm;
+        dpRender(picker);
+        return;
+    }
+
+    const day = e.target.closest('[data-datepicker-day]');
+    if (day) {
+        const picker = day.closest('[data-datepicker]');
+        const hidden = picker.querySelector('[data-datepicker-value]');
+        const label = picker.querySelector('[data-datepicker-label]');
+        hidden.value = day.dataset.datepickerDay;
+        label.textContent = dpHuman(hidden.value);
+        label.classList.remove('text-muted-foreground');
+        picker.querySelector('[data-datepicker-popover]').hidden = true;
+        if (window.jQuery && window.jQuery(hidden).valid) window.jQuery(hidden).valid();
+        return;
+    }
+
+    // Click outside any datepicker closes open calendars.
+    if (!e.target.closest('[data-datepicker]')) openPops.forEach((p) => (p.hidden = true));
+});
 
 // Theme controller — light/dark, persisted to localStorage, follows system when unset.
 // No-flash boot runs inline in <head> (see admin layout) BEFORE this file loads.

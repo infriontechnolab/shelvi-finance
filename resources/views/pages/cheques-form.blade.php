@@ -62,19 +62,17 @@
 
                     <div class="space-y-1.5">
                         <x-ui.label for="c-issue">Issue Date <span class="text-destructive">*</span></x-ui.label>
-                        <x-ui.input id="c-issue" name="issue" type="date" value="{{ $val('issue') }}" required
-                            class="user-invalid:border-destructive user-invalid:ring-destructive/20" />
+                        <x-ui.datepicker id="c-issue" name="issue" :value="$val('issue')" :required="true" />
                     </div>
 
                     <div class="space-y-1.5">
                         <x-ui.label for="c-deposit">Deposit Date</x-ui.label>
-                        <x-ui.input id="c-deposit" name="deposit" type="date" value="{{ $val('deposit') }}" />
+                        <x-ui.datepicker id="c-deposit" name="deposit" :value="$val('deposit')" placeholder="Not deposited yet" />
                     </div>
 
                     <div class="space-y-1.5">
                         <x-ui.label for="c-due">Due Date <span class="text-destructive">*</span></x-ui.label>
-                        <x-ui.input id="c-due" name="due" type="date" value="{{ $val('due') }}" required
-                            class="user-invalid:border-destructive user-invalid:ring-destructive/20" />
+                        <x-ui.datepicker id="c-due" name="due" :value="$val('due')" :required="true" />
                     </div>
 
                     <div class="space-y-1.5">

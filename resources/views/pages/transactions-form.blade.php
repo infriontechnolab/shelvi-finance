@@ -69,9 +69,8 @@
 
                     <div class="space-y-1.5">
                         <x-ui.label for="t-date">Date <span class="text-destructive">*</span></x-ui.label>
-                        <x-ui.input id="t-date" name="date" type="date" required
-                            value="{{ $val('date', $transaction->txn_date?->format('Y-m-d')) }}"
-                            class="user-invalid:border-destructive user-invalid:ring-destructive/20" />
+                        <x-ui.datepicker id="t-date" name="date" :required="true"
+                            :value="$val('date', $transaction->txn_date?->format('Y-m-d'))" />
                     </div>
 
                     <div class="space-y-1.5">
