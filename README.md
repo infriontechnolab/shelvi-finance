@@ -61,7 +61,7 @@ No database is required to run the demo — all pages render from in-memory data
 
 Frontend assets are compiled locally with Vite and the output (`public/build/`) is committed, so
 the server only needs PHP/Composer. Rebuild locally and re-upload `public/build/` after any
-Blade/CSS/JS change. See `DEPLOY.md`.
+Blade/CSS/JS change. See `DEPLOYMENT.md`.
 
 ## License
 

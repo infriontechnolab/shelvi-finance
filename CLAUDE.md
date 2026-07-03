@@ -33,7 +33,7 @@ php artisan test --filter ExampleTest  # single test
 Shared host has **no npm at runtime**. `public/build/` is compiled locally, committed (removed from
 `.gitignore`), and uploaded. **After any Blade/CSS/JS change, run `npm run build` and re-upload
 `public/build/`** — the server never builds. Server runs only `composer install --no-dev` +
-`artisan config:cache/route:cache/view:cache`. See `DEPLOY.md`.
+`artisan config:cache/route:cache/view:cache`. See `DEPLOYMENT.md`.
 
 ## Architecture
 
