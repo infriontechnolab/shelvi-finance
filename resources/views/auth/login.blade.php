@@ -26,7 +26,9 @@
         <div class="flex w-full flex-col justify-between p-6 sm:p-10 lg:w-1/2 lg:p-14">
             {{-- Brand --}}
             <a href="{{ route('login') }}" class="flex items-center gap-2.5">
-                <span class="flex size-9 items-center justify-center rounded-lg bg-primary text-base font-bold text-primary-foreground">S</span>
+                <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white p-1 shadow-sm ring-1 ring-border">
+                    <img src="/logo.svg" alt="Shelvi" class="size-full">
+                </span>
                 <span class="font-display text-lg font-bold tracking-tight">Shelvi</span>
             </a>
 
