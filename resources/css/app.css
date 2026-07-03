@@ -188,8 +188,11 @@
     flex: 1 1 100%;
     width: 100%;
 }
-/* Horizontal scroll for wide tables on small screens (cells are nowrap) */
-.dt-container .dt-layout-cell.dt-layout-table { overflow-x: auto; }
+/* Horizontal scroll for wide tables on small screens (cells are nowrap).
+   DataTables 2.x puts `dt-layout-table` on the ROW and `dt-layout-full` on the
+   cell — scroll the table's region without touching the control rows. */
+.dt-container .dt-layout-row.dt-layout-table,
+.dt-container .dt-layout-cell.dt-layout-full { overflow-x: auto; }
 
 /* Search input + length select → shadcn input look */
 .dt-container .dt-search input,

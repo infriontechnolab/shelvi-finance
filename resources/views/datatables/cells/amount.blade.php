@@ -1,7 +1,7 @@
 @php
     // $value is already INR-formatted. Tone drives the colour (Blade-scanned).
     $tones = [
-        'positive' => 'text-emerald-600',
+        'positive' => 'text-emerald-600 dark:text-emerald-400',
         'negative' => 'text-destructive',
         'muted' => 'text-muted-foreground',
         'plain' => '',
