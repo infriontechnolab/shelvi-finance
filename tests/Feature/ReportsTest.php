@@ -2,7 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Bank;
+use App\Models\Party;
+use App\Models\Transaction;
 use App\Models\User;
+use App\Support\Dates;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -49,6 +53,22 @@ class ReportsTest extends TestCase
             ->assertOk()->assertDontSee('No entries');
         $this->actingAs($admin)->get('/reports/daily-collection?period=today')
             ->assertOk()->assertSee('No entries');
+    }
+
+    public function test_today_filter_includes_todays_entries(): void
+    {
+        $admin = $this->admin();
+        $party = Party::first();
+        $bank = Bank::first();
+        // A receipt dated *today* must appear under the "today" period (the date
+        // column stores a datetime, so a plain BETWEEN on date strings dropped it).
+        Transaction::create([
+            'direction' => 'received', 'party_id' => $party->id, 'bank_id' => $bank->id,
+            'method' => 'Online', 'amount' => 123400, 'txn_date' => now()->toDateString(), 'status' => 'Cleared',
+        ]);
+
+        $this->actingAs($admin)->get('/reports/daily-collection?period=today')
+            ->assertOk()->assertDontSee('No entries')->assertSee(Dates::human(now()->toDateString()));
     }
 
     public function test_unknown_report_is_404(): void

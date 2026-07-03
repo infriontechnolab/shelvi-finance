@@ -71,7 +71,7 @@ class EloquentReportRepository implements ReportRepository
     private function daily(string $direction, ?array $range): array
     {
         $rows = Transaction::query()->where('direction', $direction)
-            ->when($range, fn ($q) => $q->whereBetween('txn_date', $range))
+            ->when($range, fn ($q) => $q->whereDate('txn_date', '>=', $range[0])->whereDate('txn_date', '<=', $range[1]))
             ->get()
             ->groupBy(fn ($t) => $t->txn_date->format('Y-m-d'))
             ->map(fn ($g, $date) => [$date, $g->count(), (int) $g->sum('amount')])
@@ -84,7 +84,7 @@ class EloquentReportRepository implements ReportRepository
     private function monthly(?array $range): array
     {
         $rows = Transaction::query()
-            ->when($range, fn ($q) => $q->whereBetween('txn_date', $range))
+            ->when($range, fn ($q) => $q->whereDate('txn_date', '>=', $range[0])->whereDate('txn_date', '<=', $range[1]))
             ->get()
             ->groupBy(fn ($t) => $t->txn_date->format('Y-m'))
             ->map(function ($g, $ym) {
@@ -105,7 +105,7 @@ class EloquentReportRepository implements ReportRepository
     private function bankWise(?array $range): array
     {
         $rows = Transaction::query()->with(['bank' => fn ($q) => $q->withTrashed()])
-            ->when($range, fn ($q) => $q->whereBetween('txn_date', $range))
+            ->when($range, fn ($q) => $q->whereDate('txn_date', '>=', $range[0])->whereDate('txn_date', '<=', $range[1]))
             ->get()
             ->groupBy('bank_id')
             ->map(function ($g) {
@@ -124,7 +124,7 @@ class EloquentReportRepository implements ReportRepository
     {
         $rows = Transaction::query()->with(['party' => fn ($q) => $q->withTrashed()])
             ->whereNotNull('party_id')
-            ->when($range, fn ($q) => $q->whereBetween('txn_date', $range))
+            ->when($range, fn ($q) => $q->whereDate('txn_date', '>=', $range[0])->whereDate('txn_date', '<=', $range[1]))
             ->get()
             ->groupBy('party_id')
             ->map(function ($g) {
@@ -154,7 +154,7 @@ class EloquentReportRepository implements ReportRepository
     {
         $rows = LedgerEntry::query()->where($side, '>', 0)
             ->with(['party' => fn ($q) => $q->withTrashed()])
-            ->when($range, fn ($q) => $q->whereBetween('entry_date', $range))
+            ->when($range, fn ($q) => $q->whereDate('entry_date', '>=', $range[0])->whereDate('entry_date', '<=', $range[1]))
             ->orderByDesc('entry_date')->orderByDesc('id')->get()
             ->map(fn (LedgerEntry $e) => [
                 Dates::human($e->entry_date->format('Y-m-d')),
@@ -169,7 +169,7 @@ class EloquentReportRepository implements ReportRepository
     private function ledgerAll(?array $range): array
     {
         $rows = LedgerEntry::query()->with(['party' => fn ($q) => $q->withTrashed()])
-            ->when($range, fn ($q) => $q->whereBetween('entry_date', $range))
+            ->when($range, fn ($q) => $q->whereDate('entry_date', '>=', $range[0])->whereDate('entry_date', '<=', $range[1]))
             ->orderBy('entry_date')->orderBy('id')->get()
             ->map(fn (LedgerEntry $e) => [
                 Dates::human($e->entry_date->format('Y-m-d')),
