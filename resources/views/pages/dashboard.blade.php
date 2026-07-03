@@ -29,7 +29,7 @@
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-7">
         {{-- Weekly collections vs payments --}}
-        @php $chartMax = collect($weeklyChart)->flatMap(fn ($w) => [$w['collection'], $w['payment']])->max(); @endphp
+        @php $chartMax = collect($weeklyChart)->flatMap(fn ($w) => [$w['collection'], $w['payment']])->max() ?: 1; @endphp
         <x-ui.card class="lg:col-span-4">
             <x-ui.card-header>
                 <x-ui.card-title>Collections vs Payments</x-ui.card-title>
