@@ -10,6 +10,12 @@
 <x-layouts.admin title="{{ $title }}">
     <x-slot:subtitle>{{ $desc }} · {{ $periodLabel }}</x-slot:subtitle>
     <x-slot:actions>
+        <x-ui.button variant="outline" size="sm" href="{{ route('reports.export', ['report' => $slug, 'format' => 'csv', 'period' => $period]) }}">
+            <x-ui.icon name="file-spreadsheet" /> CSV
+        </x-ui.button>
+        <x-ui.button variant="outline" size="sm" href="{{ route('reports.export', ['report' => $slug, 'format' => 'pdf', 'period' => $period]) }}">
+            <x-ui.icon name="file-text" /> PDF
+        </x-ui.button>
         <x-ui.button variant="outline" size="sm" href="{{ route('reports') }}">
             <x-ui.icon name="arrow-left" /> All reports
         </x-ui.button>

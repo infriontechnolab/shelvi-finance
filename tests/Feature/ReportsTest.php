@@ -56,6 +56,27 @@ class ReportsTest extends TestCase
         $this->actingAs($this->admin())->get('/reports/nope')->assertNotFound();
     }
 
+    public function test_csv_export_streams_rows(): void
+    {
+        $res = $this->actingAs($this->admin())->get('/reports/outstanding/export/csv');
+        $res->assertOk();
+        $this->assertStringContainsString('text/csv', $res->headers->get('content-type'));
+        $this->assertStringContainsString('Party,Balance,Type', $res->streamedContent());
+        $this->assertStringContainsString('Mehta Traders', $res->streamedContent());
+    }
+
+    public function test_pdf_export_downloads(): void
+    {
+        $res = $this->actingAs($this->admin())->get('/reports/monthly-summary/export/pdf?period=all');
+        $res->assertOk();
+        $this->assertSame('application/pdf', $res->headers->get('content-type'));
+    }
+
+    public function test_unknown_export_format_is_404(): void
+    {
+        $this->actingAs($this->admin())->get('/reports/outstanding/export/xml')->assertNotFound();
+    }
+
     public function test_accountant_can_view_reports(): void
     {
         $this->seed();

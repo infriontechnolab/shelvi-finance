@@ -8,21 +8,11 @@
         <x-ui.icon name="menu" class="size-5" />
     </x-ui.button>
 
-    <div class="relative hidden max-w-sm flex-1 sm:block">
-        <x-ui.icon name="search" class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <x-ui.input type="search" placeholder="Search…" class="pl-9" />
-    </div>
-
     <div class="ml-auto flex items-center gap-2">
         {{-- Theme toggle --}}
         <x-ui.button data-theme-toggle variant="ghost" size="icon" aria-label="Toggle theme">
             <x-ui.icon name="sun" data-theme-icon="light" class="size-5" />
             <x-ui.icon name="moon" data-theme-icon="dark" class="size-5" hidden />
-        </x-ui.button>
-
-        <x-ui.button variant="ghost" size="icon" aria-label="Notifications" class="relative">
-            <x-ui.icon name="bell" class="size-5" />
-            <span class="absolute right-1.5 top-1.5 size-2 rounded-full bg-destructive"></span>
         </x-ui.button>
 
         {{-- User menu --}}

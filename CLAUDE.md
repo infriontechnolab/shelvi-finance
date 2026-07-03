@@ -119,7 +119,8 @@ self-hosted by the Vite build via `bunny()` in `vite.config.js` — no runtime C
 combobox, table primitives). Pages in `resources/views/pages/`. The shell
 `components/layouts/admin.blade.php` is shell-only (head, no-flash script, title/subtitle/actions
 slots) and composes extracted components: `components/{sidebar,navbar,confirm-dialog,toast}.blade.php`.
-The sidebar reads its nav tree from **`config/navigation.php`** (not inline).
+The sidebar reads its nav tree from **`config/navigation.php`** (not inline). Reports is a single leaf →
+the `/reports` cards grid is the organized report menu.
 
 ### Forms & client validation
 Create/edit forms carry `data-validate`; `initFormValidation()` in `app.js` wires
@@ -144,3 +145,12 @@ Any controller flash (`->with('success'|'error'|'warning'|'info', …)`) is surf
 top-right by `components/toast.blade.php` + `app.js`. One `<template>` per variant keeps all Tailwind
 classes in scanned Blade (JS clones, never composes class strings). `window.showToast(message, type)` is
 exposed for client-side use.
+
+### Reports & export
+Reports are data-only (slug → `{columns, rows}`) built by `EloquentReportRepository::generate($slug,
+$period)`. Nine reports; `outstanding` is a live snapshot (ignores period), the rest honour a period
+pill (all/today/week/month/quarter/year). The report-show page offers **CSV** and **PDF** export
+(`reports.export` route, `{format}` in `csv|pdf`), both reusing the same `generate()` data and carrying
+the active period. CSV is a streamed download with a UTF-8 BOM (Excel renders `₹`). PDF uses
+**barryvdh/laravel-dompdf** rendering `resources/views/reports/pdf.blade.php` — a standalone template
+with **inline CSS only** (dompdf ignores Tailwind; no flex/grid), A4 landscape.

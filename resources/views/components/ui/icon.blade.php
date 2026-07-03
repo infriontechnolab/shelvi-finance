@@ -6,11 +6,7 @@
     $map = [
         'dashboard' => 'layout-dashboard',
         'users' => 'users',
-        'package' => 'package',
-        'cart' => 'shopping-cart',
-        'chart' => 'bar-chart-3',
         'settings' => 'settings',
-        'bell' => 'bell',
         'search' => 'search',
         'sun' => 'sun',
         'moon' => 'moon',
@@ -30,6 +26,7 @@
         'alert-circle' => 'alert-circle',
         'triangle-alert' => 'triangle-alert',
         'info' => 'info',
+        'file-spreadsheet' => 'file-spreadsheet',
     ];
 
     $lucide = $map[$name] ?? $name;

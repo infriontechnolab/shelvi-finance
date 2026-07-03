@@ -7,12 +7,12 @@ import DataTable from 'datatables.net';
 import 'jquery-validation';
 import {
     createIcons,
-    LayoutDashboard, Users, Package, ShoppingCart, BarChart3, Settings, Bell, Search,
+    LayoutDashboard, Users, Settings, Search,
     Sun, Moon, Menu, ChevronDown, LogOut, Plus, TrendingUp, TrendingDown, Ellipsis,
     User, Mail, Check, ChevronsUpDown, X, Pencil, Trash2,
     Landmark, Wallet, FileText, ArrowLeftRight, BookOpen, Calendar, AlertCircle,
     ArrowDownLeft, ArrowUpRight, ArrowRight, ArrowLeft, Eye, EyeOff, ShieldCheck,
-    CircleCheck, TriangleAlert, Info,
+    CircleCheck, TriangleAlert, Info, FileSpreadsheet,
 } from 'lucide';
 
 window.$ = window.jQuery = $;
@@ -22,12 +22,12 @@ window.DataTable = DataTable;
 // each DataTables draw so ajax-injected rows (action buttons) get icons too.
 // Placeholders carry their own size class (e.g. size-4), preserved onto the <svg>.
 const lucideIcons = {
-    LayoutDashboard, Users, Package, ShoppingCart, BarChart3, Settings, Bell, Search,
+    LayoutDashboard, Users, Settings, Search,
     Sun, Moon, Menu, ChevronDown, LogOut, Plus, TrendingUp, TrendingDown, Ellipsis,
     User, Mail, Check, ChevronsUpDown, X, Pencil, Trash2,
     Landmark, Wallet, FileText, ArrowLeftRight, BookOpen, Calendar, AlertCircle,
     ArrowDownLeft, ArrowUpRight, ArrowRight, ArrowLeft, Eye, EyeOff, ShieldCheck,
-    CircleCheck, TriangleAlert, Info,
+    CircleCheck, TriangleAlert, Info, FileSpreadsheet,
 };
 function renderIcons() {
     createIcons({ icons: lucideIcons });

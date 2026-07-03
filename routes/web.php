@@ -60,8 +60,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/cheques/{cheque}/verify', [ChequeController::class, 'verify'])->name('cheques.verify')->middleware('permission:cheques.verify');
 
     // Reports.
-    Route::get('/reports', [ReportController::class, 'index'])->name('reports')->middleware('permission:reports.view');
-    Route::get('/reports/{report}', [ReportController::class, 'show'])->name('reports.show')->middleware('permission:reports.view');
+    Route::middleware('permission:reports.view')->group(function () {
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports');
+        Route::get('/reports/{report}/export/{format}', [ReportController::class, 'export'])->name('reports.export');
+        Route::get('/reports/{report}', [ReportController::class, 'show'])->name('reports.show');
+    });
 
     // User Management (admin).
     Route::get('/users', [UserController::class, 'index'])->name('users')->middleware('permission:users.view');
