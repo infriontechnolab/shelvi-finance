@@ -91,29 +91,30 @@
         </div>
 
         {{-- ───────────── Right: brand panel ───────────── --}}
-        <div class="relative hidden w-1/2 overflow-hidden bg-gradient-to-br from-[#F9A01B] via-[#ED6626] to-[#2C2359] p-14 text-white lg:flex lg:flex-col lg:items-center lg:justify-center">
+        <div class="relative hidden w-1/2 overflow-hidden bg-gradient-to-br from-[#D9531A] via-[#B23A1E] to-[#241C4A] p-14 text-white lg:flex lg:flex-col lg:items-center lg:justify-center">
             {{-- subtle dot texture + soft flourishes --}}
-            <div aria-hidden="true" class="pointer-events-none absolute inset-0 opacity-[0.14]"
+            <div aria-hidden="true" class="pointer-events-none absolute inset-0 opacity-[0.10]"
                 style="background-image: radial-gradient(circle at 1px 1px, #fff 1px, transparent 0); background-size: 22px 22px;"></div>
-            <div aria-hidden="true" class="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full bg-white/10 blur-3xl"></div>
-            <div aria-hidden="true" class="pointer-events-none absolute -bottom-32 -left-16 size-80 rounded-full bg-black/15 blur-3xl"></div>
+            {{-- dark scrim keeps white text high-contrast over the bright areas --}}
+            <div aria-hidden="true" class="pointer-events-none absolute inset-0 bg-black/20"></div>
+            <div aria-hidden="true" class="pointer-events-none absolute -bottom-32 -left-16 size-80 rounded-full bg-black/20 blur-3xl"></div>
 
             <div class="relative flex max-w-md flex-col items-center text-center">
                 <span class="flex size-16 items-center justify-center rounded-2xl bg-white p-2 shadow-lg">
                     <img src="/logo.svg" alt="Shelvi" class="size-full">
                 </span>
-                <h2 class="mt-6 font-display text-3xl font-bold leading-tight tracking-tight">Shelvi Finance</h2>
-                <p class="mt-3 text-sm text-white/85">
+                <h2 class="mt-6 font-display text-3xl font-bold leading-tight tracking-tight text-white">Shelvi Finance</h2>
+                <p class="mt-3 text-sm leading-relaxed text-white/95">
                     Track collections, payments and party ledgers across every account — banks, receivables and cheques in one place.
                 </p>
 
                 <div class="mt-10 grid w-full max-w-xs gap-3 text-left">
                     @foreach ([['landmark', 'Bank accounts & statements'], ['users', 'Party ledgers & balances'], ['wallet', 'Cheque tracking & clearing'], ['file-text', 'Reports with CSV / PDF export']] as [$icon, $text])
-                        <div class="flex items-center gap-3 rounded-xl bg-white/10 px-4 py-2.5 ring-1 ring-white/15 backdrop-blur-sm">
-                            <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/15">
-                                <i data-lucide="{{ $icon }}" class="size-4"></i>
+                        <div class="flex items-center gap-3 rounded-xl bg-white/15 px-4 py-2.5 ring-1 ring-white/20 backdrop-blur-sm">
+                            <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/20">
+                                <i data-lucide="{{ $icon }}" class="size-4 text-white"></i>
                             </span>
-                            <span class="text-sm font-medium">{{ $text }}</span>
+                            <span class="text-sm font-medium text-white">{{ $text }}</span>
                         </div>
                     @endforeach
                 </div>
