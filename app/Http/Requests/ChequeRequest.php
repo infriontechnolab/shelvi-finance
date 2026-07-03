@@ -40,8 +40,8 @@ class ChequeRequest extends FormRequest
     {
         return [
             'cheque_no' => $this->input('no'),
-            'party_id' => Party::where('name', $this->input('party'))->value('id'),
-            'bank_id' => Bank::where('name', $this->input('bank'))->value('id'),
+            'party_id' => Party::idForName($this->input('party')),
+            'bank_id' => Bank::idForName($this->input('bank')),
             'amount' => (int) round(((float) $this->input('amount')) * 100),
             'issue_date' => $this->input('issue'),
             'deposit_date' => $this->input('deposit') ?: null,

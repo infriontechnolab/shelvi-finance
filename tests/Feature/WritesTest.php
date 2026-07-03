@@ -207,4 +207,48 @@ class WritesTest extends TestCase
         $this->assertSame('Cleared', $c->fresh()->status);
         $this->assertNotNull($c->fresh()->deposit_date);
     }
+
+    // ---- #4 soft-delete edge cases ---------------------------------------
+
+    public function test_bank_account_number_is_unique_among_active_only(): void
+    {
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->post('/banks', [
+            'name' => 'First', 'account' => 'ACC-REUSE', 'type' => 'Current', 'holder' => 'H', 'balance' => 0,
+        ])->assertRedirect('/banks');
+        $first = Bank::where('account_number', 'ACC-REUSE')->first();
+
+        // Duplicate while active → rejected.
+        $this->actingAs($admin)->post('/banks', [
+            'name' => 'Clash', 'account' => 'ACC-REUSE', 'type' => 'Current', 'holder' => 'H', 'balance' => 0,
+        ])->assertSessionHasErrors('account');
+
+        // Once the first is soft-deleted, its number is free to reuse.
+        $first->delete();
+        $this->actingAs($admin)->post('/banks', [
+            'name' => 'Reuser', 'account' => 'ACC-REUSE', 'type' => 'Current', 'holder' => 'H', 'balance' => 0,
+        ])->assertSessionHasNoErrors()->assertRedirect('/banks');
+    }
+
+    public function test_editing_a_transaction_keeps_its_soft_deleted_party(): void
+    {
+        $admin = $this->admin();
+        $party = Party::create(['name' => 'Trashed Party', 'category' => 'customer', 'opening_balance' => 0]);
+        $bank = Bank::create(['name' => 'Edit Bank', 'account_number' => 'EB-1', 'holder' => 'H', 'type' => 'Current', 'opening_balance' => 0]);
+        $txn = Transaction::create([
+            'direction' => 'received', 'party_id' => $party->id, 'bank_id' => $bank->id,
+            'method' => 'Online', 'amount' => 100000, 'txn_date' => '2025-05-01', 'status' => 'Cleared',
+        ]);
+        $party->delete(); // party now soft-deleted, but the txn still points at it
+
+        $this->actingAs($admin)->put('/transactions/'.$txn->id, [
+            'direction' => 'received', 'party' => 'Trashed Party', 'amount' => 1500,
+            'method' => 'Online', 'bank' => 'Edit Bank', 'date' => '2025-05-02', 'status' => 'Cleared',
+        ])->assertRedirect();
+
+        // party_id preserved (not nulled) despite the party being trashed.
+        $this->assertSame($party->id, $txn->fresh()->party_id);
+        $this->assertSame(150000, $txn->fresh()->amount);
+    }
 }

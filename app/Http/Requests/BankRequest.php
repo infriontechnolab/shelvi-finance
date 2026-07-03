@@ -19,7 +19,14 @@ class BankRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'account' => ['required', 'string', 'max:34'],
+            // Unique among ACTIVE banks only — a soft-deleted bank's number is
+            // free to reuse (its row is hidden). Ignore self on edit.
+            'account' => [
+                'required', 'string', 'max:34',
+                Rule::unique('banks', 'account_number')
+                    ->whereNull('deleted_at')
+                    ->ignore($this->route('bank')),
+            ],
             'type' => ['required', Rule::in(array_keys(config('options.bank_types')))],
             'holder' => ['required', 'string', 'max:255'],
             'balance' => ['nullable', 'numeric', 'min:0'],

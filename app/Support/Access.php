@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\User;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -20,12 +21,18 @@ final class Access
     public const SUPERADMIN = 'superadmin';
 
     /** Permission prefixes only the superadmin may hold — hidden from the matrix. */
-    public const HIDDEN_GROUPS = ['users', 'roles'];
+    public const HIDDEN_GROUPS = ['users', 'roles', 'trash'];
 
     /** Role names that must never appear in, or be reachable through, the UI. */
     public static function hiddenRoles(): array
     {
         return [self::SUPERADMIN];
+    }
+
+    /** Is this user the hidden owner? (superadmin-only surfaces gate on this.) */
+    public static function isSuperAdmin(?User $user): bool
+    {
+        return $user !== null && $user->hasRole(self::SUPERADMIN);
     }
 
     /** Is this a role the UI must pretend does not exist? */

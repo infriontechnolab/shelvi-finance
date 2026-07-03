@@ -30,6 +30,8 @@ class RolesAndPermissionsSeeder extends Seeder
         'reports.view', 'reports.export',
         'users.view', 'users.create', 'users.update', 'users.delete',
         'roles.view', 'roles.create', 'roles.update', 'roles.delete',
+        // Trash / recycle bin — superadmin only (a hidden group, see Access).
+        'trash.view', 'trash.restore', 'trash.forceDelete',
     ];
 
     /** Accountant subset: day-to-day operation, no delete, no user/role admin, banks read-only. */

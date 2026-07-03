@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ResolvableByName;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['name', 'category', 'phone', 'opening_balance', 'balance_type', 'credit_limit', 'status'])]
 class Party extends Model
 {
-    use SoftDeletes;
+    use ResolvableByName, SoftDeletes;
 
     protected function casts(): array
     {

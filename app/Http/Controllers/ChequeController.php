@@ -44,10 +44,27 @@ class ChequeController extends Controller
 
     public function edit(Cheque $cheque)
     {
-        return view('pages.cheques-form', [
-            'cheque' => $this->cheques->find((string) $cheque->id) ?? abort(404),
-            ...$this->formOptions(),
-        ]);
+        $row = $this->cheques->find((string) $cheque->id) ?? abort(404);
+
+        $options = $this->formOptions();
+        // Keep a soft-deleted party/bank selectable (dropdowns list active only).
+        $options['parties'] = $this->keepCurrent($options['parties'], $row['party'] ?? null);
+        $options['banksList'] = $this->keepCurrent($options['banksList'], $row['bank'] ?? null);
+
+        return view('pages.cheques-form', ['cheque' => $row, ...$options]);
+    }
+
+    /**
+     * @param  array<string, string>  $options
+     * @return array<string, string>
+     */
+    private function keepCurrent(array $options, ?string $name): array
+    {
+        if ($name !== null && $name !== '' && ! array_key_exists($name, $options)) {
+            $options[$name] = $name.' (deleted)';
+        }
+
+        return $options;
     }
 
     public function update(ChequeRequest $request, Cheque $cheque): RedirectResponse

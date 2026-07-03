@@ -137,8 +137,23 @@ Party, Bank, Cheque, Transaction, LedgerEntry use the `SoftDeletes` trait (`dele
 delete sets `deleted_at` — the row stays (recoverable, FK-safe, no cascade crash) and is auto-hidden by
 the global scope. Child lists that show a parent's name (cheques→party/bank, money→party/bank, dashboard
 widgets, bank statement) eager-load the parent with `withTrashed()` so names survive a parent's
-soft-delete. Aggregates (dashboard totals, ledger party pick) correctly exclude trashed rows. No restore
-UI yet — recover via `Model::withTrashed()->restore()`.
+soft-delete. Aggregates (dashboard totals, ledger party pick) correctly exclude trashed rows.
+
+**Trash / recycle bin** (`/trash`, `TrashController` + `pages/trash.blade.php`) — **superadmin only**:
+gated by the `trash.*` permission group, which is listed in `Access::HIDDEN_GROUPS` so no visible role
+can hold it and it never shows in the role matrix (same mechanism as `users.*`/`roles.*`). Lists the
+soft-deleted rows of the five entities and offers Restore / Delete-forever. Restoring a **bank** is
+blocked if an active bank already holds its `account_number`; restoring/force-deleting a **transaction**
+also restores/force-deletes its linked ledger line (transaction-owned ledger rows are hidden from the
+Ledger section via `whereNull('transaction_id')`).
+
+**Soft-delete edge cases handled:** (a) `account_number` uniqueness is enforced in `BankRequest` scoped
+to active rows (`Rule::unique(...)->whereNull('deleted_at')->ignore(...)`) so a trashed bank's number is
+reusable and duplicates among active banks are rejected (no DB unique index — it would span trashed
+rows). (b) Cheque/transaction **edit** forms keep a soft-deleted party/bank selectable: the controller
+`keepCurrent()` appends the record's current name (labelled "… (deleted)") to the active dropdown, and
+`Party::idForName()`/`Bank::idForName()` (the `ResolvableByName` trait) resolve a name→id `withTrashed()`
+preferring the active row, so re-saving never nulls a link to a trashed parent.
 
 ### Flash toasts
 Any controller flash (`->with('success'|'error'|'warning'|'info', …)`) is surfaced as a colored toast

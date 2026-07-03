@@ -41,8 +41,8 @@ class TransactionRequest extends FormRequest
     {
         return [
             'direction' => $this->input('direction'),
-            'party_id' => Party::where('name', $this->input('party'))->value('id'),
-            'bank_id' => Bank::where('name', $this->input('bank'))->value('id'),
+            'party_id' => Party::idForName($this->input('party')),
+            'bank_id' => Bank::idForName($this->input('bank')),
             'method' => $this->input('method'),
             'amount' => (int) round(((float) $this->input('amount')) * 100),
             'reference' => $this->input('ref') ?: null,

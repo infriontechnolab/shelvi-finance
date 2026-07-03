@@ -8,6 +8,7 @@ use App\Http\Controllers\MoneyController;
 use App\Http\Controllers\PartyController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\TrashController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -73,6 +74,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit')->middleware('permission:users.update');
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update')->middleware('permission:users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy')->middleware('permission:users.delete');
+
+    // Trash / recycle bin (superadmin only — trash.* is a hidden permission group).
+    Route::get('/trash', [TrashController::class, 'index'])->name('trash')->middleware('permission:trash.view');
+    Route::post('/trash/{type}/{id}/restore', [TrashController::class, 'restore'])->name('trash.restore')->middleware('permission:trash.restore');
+    Route::delete('/trash/{type}/{id}', [TrashController::class, 'forceDelete'])->name('trash.destroy')->middleware('permission:trash.forceDelete');
 
     // Role & permission management (superadmin only — no visible role grants roles.*).
     Route::get('/roles', [RoleController::class, 'index'])->name('roles')->middleware('permission:roles.view');

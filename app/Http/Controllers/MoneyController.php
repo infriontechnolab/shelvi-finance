@@ -38,10 +38,17 @@ class MoneyController extends Controller
 
     public function edit(Transaction $transaction)
     {
-        return view('pages.transactions-form', [
-            'transaction' => $transaction->load(['party', 'bank']),
-            ...$this->formOptions(),
+        // Load the party/bank even if soft-deleted so the form can name them.
+        $transaction->load([
+            'party' => fn ($q) => $q->withTrashed(),
+            'bank' => fn ($q) => $q->withTrashed(),
         ]);
+
+        $options = $this->formOptions();
+        $options['parties'] = $this->keepCurrent($options['parties'], $transaction->party?->name);
+        $options['banksList'] = $this->keepCurrent($options['banksList'], $transaction->bank?->name);
+
+        return view('pages.transactions-form', ['transaction' => $transaction, ...$options]);
     }
 
     public function update(TransactionRequest $request, Transaction $transaction): RedirectResponse
@@ -89,6 +96,22 @@ class MoneyController extends Controller
     private function listRoute(Transaction $transaction): string
     {
         return $transaction->direction === 'received' ? route('money-received') : route('money-paid');
+    }
+
+    /**
+     * Keep a soft-deleted party/bank selectable on the edit form: dropdowns list
+     * only active rows, so append the record's current one if it's missing.
+     *
+     * @param  array<string, string>  $options
+     * @return array<string, string>
+     */
+    private function keepCurrent(array $options, ?string $name): array
+    {
+        if ($name !== null && $name !== '' && ! array_key_exists($name, $options)) {
+            $options[$name] = $name.' (deleted)';
+        }
+
+        return $options;
     }
 
     /** Party + bank dropdowns and enums shared by both entry forms. */

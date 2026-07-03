@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ResolvableByName;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['name', 'initials', 'account_number', 'holder', 'type', 'opening_balance'])]
 class Bank extends Model
 {
-    use SoftDeletes;
+    use ResolvableByName, SoftDeletes;
 
     protected function casts(): array
     {

@@ -12,7 +12,7 @@ import {
     User, Mail, Check, ChevronsUpDown, X, Pencil, Trash2,
     Landmark, Wallet, FileText, ArrowLeftRight, BookOpen, Calendar, AlertCircle,
     ArrowDownLeft, ArrowUpRight, ArrowRight, ArrowLeft, Eye, EyeOff, ShieldCheck,
-    CircleCheck, TriangleAlert, Info, FileSpreadsheet,
+    CircleCheck, TriangleAlert, Info, FileSpreadsheet, RotateCcw,
 } from 'lucide';
 
 window.$ = window.jQuery = $;
@@ -27,7 +27,7 @@ const lucideIcons = {
     User, Mail, Check, ChevronsUpDown, X, Pencil, Trash2,
     Landmark, Wallet, FileText, ArrowLeftRight, BookOpen, Calendar, AlertCircle,
     ArrowDownLeft, ArrowUpRight, ArrowRight, ArrowLeft, Eye, EyeOff, ShieldCheck,
-    CircleCheck, TriangleAlert, Info, FileSpreadsheet,
+    CircleCheck, TriangleAlert, Info, FileSpreadsheet, RotateCcw,
 };
 function renderIcons() {
     createIcons({ icons: lucideIcons });

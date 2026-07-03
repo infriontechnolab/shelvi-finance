@@ -27,6 +27,8 @@
         'triangle-alert' => 'triangle-alert',
         'info' => 'info',
         'file-spreadsheet' => 'file-spreadsheet',
+        'rotate-ccw' => 'rotate-ccw',
+        'trash-2' => 'trash-2',
     ];
 
     $lucide = $map[$name] ?? $name;
