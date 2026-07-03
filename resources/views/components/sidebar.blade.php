@@ -20,7 +20,7 @@
 
 <aside data-sidebar data-collapsed="false"
     class="group/sidebar fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-200 lg:static lg:translate-x-0 data-[collapsed=true]:lg:w-16">
-    <div class="flex h-16 items-center gap-2 border-b border-sidebar-border px-6 group-data-[collapsed=true]/sidebar:lg:justify-center group-data-[collapsed=true]/sidebar:lg:px-0">
+    <div class="flex h-16 items-center justify-center gap-2 border-b border-sidebar-border px-6 group-data-[collapsed=true]/sidebar:lg:px-0">
         <span class="flex size-8 shrink-0 items-center justify-center rounded-md bg-white p-0.5 shadow-sm">
             <img src="/logo.svg" alt="Shelvi" class="size-full">
         </span>
