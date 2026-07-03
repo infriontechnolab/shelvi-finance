@@ -21,10 +21,8 @@ use Illuminate\Support\ServiceProvider;
 class AppServiceProvider extends ServiceProvider
 {
     /**
-     * Repository contract → implementation map. All resources use the Eloquent
-     * implementations; controllers, DataTables and views are agnostic to which
-     * implementation is bound (Mock impls are kept in app/Repositories/Mock as
-     * reference — flip a line to swap one back).
+     * Repository contract → implementation map. Controllers, DataTables and views
+     * depend only on the contracts; the Eloquent implementations are bound here.
      */
     private const REPOSITORIES = [
         PartyRepository::class => EloquentPartyRepository::class,

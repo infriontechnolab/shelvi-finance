@@ -1,9 +1,9 @@
 # Shelvi Finance
 
 Finance & receivables admin panel built with **Laravel 13**, **Tailwind CSS v4**, and a
-shadcn-inspired component set — **Blade only, no React, no Alpine**. Design-only demo: pages
-render in-memory data behind a repository seam, so a real database can slot in without touching
-controllers or views.
+shadcn-inspired component set — **Blade only, no React, no Alpine**. Data flows through a repository
+seam backed by **Eloquent** (SQLite in dev, MySQL in production), so controllers and views stay
+decoupled from the database. Deployment: see `DEPLOYMENT.md`.
 
 ## Stack
 
@@ -41,7 +41,7 @@ controllers or views.
 - **UI kit** in `resources/views/components/ui/`; app shell in `components/layouts/admin.blade.php`
   (sidebar nav from `config/navigation.php`).
 
-See `CLAUDE.md` for the full architecture notes and `BRAND.md` for brand tokens.
+See `DEPLOYMENT.md` for install/deploy and `BRAND.md` for brand tokens.
 
 ## Getting started
 
