@@ -8,6 +8,11 @@ use Illuminate\Support\Collection;
 
 class MockBankRepository implements BankRepository
 {
+    public function deleted(): array
+    {
+        return []; // mock has no soft-deleted rows
+    }
+
     public function all(): array
     {
         return Mock::banks();

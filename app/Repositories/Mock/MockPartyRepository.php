@@ -8,6 +8,11 @@ use Illuminate\Support\Collection;
 
 class MockPartyRepository implements PartyRepository
 {
+    public function deleted(): Collection
+    {
+        return collect(); // mock has no soft-deleted rows
+    }
+
     public function all(): Collection
     {
         return Mock::parties();

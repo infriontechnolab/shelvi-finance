@@ -6,16 +6,23 @@ use App\DataTables\BankTxnsDataTable;
 use App\Http\Requests\BankRequest;
 use App\Models\Bank;
 use App\Repositories\Contracts\BankRepository;
+use App\Support\Access;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class BankController extends Controller
 {
     public function __construct(private readonly BankRepository $banks) {}
 
-    public function index(BankTxnsDataTable $dataTable)
+    public function index(BankTxnsDataTable $dataTable, Request $request)
     {
+        // Banks render as cards, so the "show deleted" toggle is a superadmin-only
+        // page mode (?trashed=1) that swaps the cards to soft-deleted accounts.
+        $trashed = $request->boolean('trashed') && Access::isSuperAdmin($request->user());
+
         return $dataTable->render('pages.banks', [
-            'banks' => $this->banks->all(),
+            'banks' => $trashed ? $this->banks->deleted() : $this->banks->all(),
+            'trashed' => $trashed,
         ]);
     }
 

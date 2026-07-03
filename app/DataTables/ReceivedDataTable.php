@@ -33,23 +33,26 @@ class ReceivedDataTable extends BaseDataTable
                 'Cleared' => 'success',
                 'Pending' => 'warning',
             ]))
-            ->addColumn('action', fn ($row) => $this->gatedActions(
-                $row['id'], 'transactions',
-                route('transactions.edit', $row['tid']), route('transactions.destroy', $row['tid']), $row['id']
-            ))
+            ->addColumn('action', fn ($row) => $this->viewingTrash()
+                ? $this->trashActions('transactions', $row['tid'], $row['id'])
+                : $this->gatedActions(
+                    $row['id'], 'transactions',
+                    route('transactions.edit', $row['tid']), route('transactions.destroy', $row['tid']), $row['id']
+                ))
             ->rawColumns(['id', 'party', 'method', 'bank', 'ref', 'amount', 'status', 'action'])
             ->setRowId('id');
     }
 
     public function query(): Collection
     {
-        return $this->money->received();
+        return $this->viewingTrash() ? $this->money->deleted('received') : $this->money->received();
     }
 
     public function html(): HtmlBuilder
     {
         return $this->baseBuilder('received-table')
             ->columns($this->getColumns())
+            ->minifiedAjax('', $this->trashedAjaxData('received-table'))
             ->orderBy(1, 'desc');
     }
 

@@ -75,8 +75,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update')->middleware('permission:users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy')->middleware('permission:users.delete');
 
-    // Trash / recycle bin (superadmin only — trash.* is a hidden permission group).
-    Route::get('/trash', [TrashController::class, 'index'])->name('trash')->middleware('permission:trash.view');
+    // Trash / recycle bin — superadmin only (trash.* is a hidden permission group).
+    // No page of its own: each module's list has a "Show deleted" toggle; these
+    // endpoints back its Restore / Delete-forever row actions.
     Route::post('/trash/{type}/{id}/restore', [TrashController::class, 'restore'])->name('trash.restore')->middleware('permission:trash.restore');
     Route::delete('/trash/{type}/{id}', [TrashController::class, 'forceDelete'])->name('trash.destroy')->middleware('permission:trash.forceDelete');
 

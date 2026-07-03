@@ -1,6 +1,7 @@
 <x-layouts.admin title="Cheque Management">
     <x-slot:subtitle>Track issued and received cheques through clearing.</x-slot:subtitle>
     <x-slot:actions>
+        <x-trash-toggle table="cheques-table" />
         <x-ui.combobox id="chequeStatus" placeholder="All statuses" searchPlaceholder="Filter status…"
             :options="['' => 'All statuses', 'Pending' => 'Pending', 'Cleared' => 'Cleared', 'Bounced' => 'Bounced']" />
         @can('cheques.create')

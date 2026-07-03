@@ -8,6 +8,11 @@ use Illuminate\Support\Collection;
 
 class MockMoneyRepository implements MoneyRepository
 {
+    public function deleted(string $direction): Collection
+    {
+        return collect(); // mock has no soft-deleted rows
+    }
+
     public function received(): Collection
     {
         return Mock::received();

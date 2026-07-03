@@ -1,6 +1,7 @@
 <x-layouts.admin title="Party Management">
     <x-slot:subtitle>Customers, vendors, finance companies and agencies.</x-slot:subtitle>
     <x-slot:actions>
+        <x-trash-toggle table="parties-table" />
         <x-ui.combobox id="partyCategory" placeholder="All categories" searchPlaceholder="Filter category…"
             :options="['' => 'All categories', 'Customer' => 'Customer', 'Vendor' => 'Vendor', 'Finance Co' => 'Finance Co', 'Agency' => 'Agency']" />
         @can('parties.create')

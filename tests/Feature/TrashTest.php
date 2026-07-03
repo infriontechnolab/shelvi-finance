@@ -26,46 +26,67 @@ class TrashTest extends TestCase
         return $this->user('owner@shelvi.test');
     }
 
-    // ---- Access (superadmin only) ----------------------------------------
-
-    public function test_superadmin_can_view_trash(): void
+    /** Pull a list DataTable's ajax rows as JSON. */
+    private function feed(User $as, string $url): string
     {
-        $this->actingAs($this->superadmin())->get('/trash')->assertOk();
+        return collect(
+            $this->actingAs($as)
+                ->withHeaders(['X-Requested-With' => 'XMLHttpRequest', 'Accept' => 'application/json'])
+                ->get($url)->json('data')
+        )->toJson();
     }
 
-    public function test_admin_cannot_view_trash(): void
+    // ---- The gated "Show deleted" toggle ---------------------------------
+
+    public function test_superadmin_toggle_shows_deleted_rows_only(): void
     {
-        $this->actingAs($this->user('admin@shelvi.test'))->get('/trash')->assertForbidden();
+        $admin = $this->superadmin();
+        $party = Party::create(['name' => 'Ghost Traders', 'category' => 'customer', 'phone' => '9000000000', 'opening_balance' => 0]);
+        $party->delete();
+
+        // Default (active) feed hides it; trashed feed shows it.
+        $this->assertStringNotContainsString('Ghost Traders', $this->feed($admin, '/parties'));
+        $this->assertStringContainsString('Ghost Traders', $this->feed($admin, '/parties?trashed=1'));
     }
 
-    public function test_accountant_cannot_view_trash(): void
+    public function test_non_superadmin_cannot_use_the_trashed_toggle(): void
     {
-        $this->actingAs($this->user('accountant@shelvi.test'))->get('/trash')->assertForbidden();
+        $admin = $this->user('admin@shelvi.test');
+        $party = Party::create(['name' => 'Ghost Traders', 'category' => 'customer', 'phone' => '9000000000', 'opening_balance' => 0]);
+        $party->delete();
+
+        // Admin lacks trash.view — the toggle is ignored, feed stays active-only.
+        $this->assertStringNotContainsString('Ghost Traders', $this->feed($admin, '/parties?trashed=1'));
     }
 
-    // ---- Restore / force delete ------------------------------------------
+    // ---- Restore / force delete (action endpoints) -----------------------
 
     public function test_restore_brings_a_party_back(): void
     {
         $admin = $this->superadmin();
-        $party = Party::create(['name' => 'Ghost Traders', 'category' => 'customer', 'opening_balance' => 0]);
+        $party = Party::create(['name' => 'Ghost Traders', 'category' => 'customer', 'phone' => '9000000000', 'opening_balance' => 0]);
         $party->delete();
 
-        $this->actingAs($admin)
-            ->post("/trash/parties/{$party->id}/restore")
-            ->assertRedirect();
-
+        $this->actingAs($admin)->post("/trash/parties/{$party->id}/restore")->assertRedirect();
         $this->assertNull($party->fresh()->deleted_at);
+    }
+
+    public function test_admin_cannot_restore(): void
+    {
+        $party = Party::create(['name' => 'Ghost Traders', 'category' => 'customer', 'phone' => '9000000000', 'opening_balance' => 0]);
+        $party->delete();
+
+        $this->actingAs($this->user('admin@shelvi.test'))
+            ->post("/trash/parties/{$party->id}/restore")->assertForbidden();
     }
 
     public function test_force_delete_removes_the_row_entirely(): void
     {
         $admin = $this->superadmin();
-        $party = Party::create(['name' => 'Gone Forever', 'category' => 'customer', 'opening_balance' => 0]);
+        $party = Party::create(['name' => 'Gone Forever', 'category' => 'customer', 'phone' => '9000000000', 'opening_balance' => 0]);
         $party->delete();
 
         $this->actingAs($admin)->delete("/trash/parties/{$party->id}")->assertRedirect();
-
         $this->assertDatabaseMissing('parties', ['id' => $party->id]);
     }
 
@@ -74,20 +95,16 @@ class TrashTest extends TestCase
         $admin = $this->superadmin();
         $old = Bank::create(['name' => 'Old A/C', 'account_number' => 'DUP-1', 'holder' => 'X', 'type' => 'Current', 'opening_balance' => 0]);
         $old->delete();
-        // An active bank now holds the same number.
         Bank::create(['name' => 'New A/C', 'account_number' => 'DUP-1', 'holder' => 'Y', 'type' => 'Current', 'opening_balance' => 0]);
 
-        $this->actingAs($admin)
-            ->post("/trash/banks/{$old->id}/restore")
-            ->assertRedirect();
-
+        $this->actingAs($admin)->post("/trash/banks/{$old->id}/restore")->assertRedirect();
         $this->assertNotNull($old->fresh()->deleted_at, 'conflicting bank must stay trashed');
     }
 
     public function test_restoring_a_transaction_also_restores_its_ledger_line(): void
     {
         $admin = $this->superadmin();
-        $party = Party::create(['name' => 'Ledger Party', 'category' => 'customer', 'opening_balance' => 0]);
+        $party = Party::create(['name' => 'Ledger Party', 'category' => 'customer', 'phone' => '9000000000', 'opening_balance' => 0]);
         $bank = Bank::create(['name' => 'Main', 'account_number' => 'AC-9', 'holder' => 'H', 'type' => 'Current', 'opening_balance' => 0]);
         $txn = Transaction::create([
             'direction' => 'received', 'party_id' => $party->id, 'bank_id' => $bank->id,

@@ -9,6 +9,11 @@ use Illuminate\Support\Collection;
 
 class MockChequeRepository implements ChequeRepository
 {
+    public function deleted(): Collection
+    {
+        return collect(); // mock has no soft-deleted rows
+    }
+
     public function all(): Collection
     {
         return Mock::cheques();

@@ -20,6 +20,14 @@ class EloquentChequeRepository implements ChequeRepository
             ->map(fn (Cheque $c) => $this->toRow($c));
     }
 
+    public function deleted(): Collection
+    {
+        return Cheque::onlyTrashed()->with(['party' => fn ($q) => $q->withTrashed(), 'bank' => fn ($q) => $q->withTrashed()])
+            ->orderByDesc('issue_date')
+            ->get()
+            ->map(fn (Cheque $c) => $this->toRow($c));
+    }
+
     public function find(string $id): ?array
     {
         $cheque = Cheque::query()->with(['party' => fn ($q) => $q->withTrashed(), 'bank' => fn ($q) => $q->withTrashed()])->find($id);

@@ -139,13 +139,20 @@ the global scope. Child lists that show a parent's name (cheques→party/bank, m
 widgets, bank statement) eager-load the parent with `withTrashed()` so names survive a parent's
 soft-delete. Aggregates (dashboard totals, ledger party pick) correctly exclude trashed rows.
 
-**Trash / recycle bin** (`/trash`, `TrashController` + `pages/trash.blade.php`) — **superadmin only**:
-gated by the `trash.*` permission group, which is listed in `Access::HIDDEN_GROUPS` so no visible role
-can hold it and it never shows in the role matrix (same mechanism as `users.*`/`roles.*`). Lists the
-soft-deleted rows of the five entities and offers Restore / Delete-forever. Restoring a **bank** is
-blocked if an active bank already holds its `account_number`; restoring/force-deleting a **transaction**
-also restores/force-deletes its linked ledger line (transaction-owned ledger rows are hidden from the
-Ledger section via `whereNull('transaction_id')`).
+**Trash / recycle bin** — **superadmin only**, gated by the `trash.*` permission group listed in
+`Access::HIDDEN_GROUPS` (so no visible role can hold it and it never shows in the role matrix, same
+mechanism as `users.*`/`roles.*`). There is **no separate trash page**: it's a feature *on each module's
+existing list*. A superadmin-only **"Show deleted"** toggle (`<x-trash-toggle table="…">`) flips the
+list's DataTable to its soft-deleted rows (via `viewingTrash()` + the repo's `deleted()` feed, added to
+Party/Cheque/Money/Bank repos) and swaps the Edit/Delete action column to **Restore / Delete-forever**
+(`trash-actions` cell). The toggle is wired for the modules that have a real list DataTable — parties,
+cheques, money-received, money-paid — driven by `BaseDataTable::viewingTrash()`/`trashedAjaxData()`/`trashActions()`.
+**Banks** are cards, so their toggle is a page mode (`?trashed=1`, `BankController@index`) that swaps the
+cards to deleted accounts; **Ledger** has no toggle (entries are transaction-driven, restored with their
+transaction). Restore/purge post to `trash.restore` / `trash.destroy` (`TrashController`, whitelisted by
+`App\Support\Trash::model()`). Restoring a **bank** is blocked if an active bank already holds its
+`account_number`; restoring/force-deleting a **transaction** also restores/force-deletes its linked
+ledger line.
 
 **Soft-delete edge cases handled:** (a) `account_number` uniqueness is enforced in `BankRequest` scoped
 to active rows (`Rule::unique(...)->whereNull('deleted_at')->ignore(...)`) so a trashed bank's number is

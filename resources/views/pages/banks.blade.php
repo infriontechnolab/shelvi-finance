@@ -1,15 +1,24 @@
 <x-layouts.admin title="Bank Accounts">
     <x-slot:subtitle>Balances and statements across all linked accounts.</x-slot:subtitle>
     <x-slot:actions>
+        @can('trash.view')
+            @if ($trashed)
+                <x-ui.button variant="outline" size="sm" href="{{ route('banks') }}"><x-ui.icon name="arrow-left" /> Show active</x-ui.button>
+            @else
+                <x-ui.button variant="outline" size="sm" href="{{ route('banks', ['trashed' => 1]) }}"><x-ui.icon name="trash-2" /> Show deleted</x-ui.button>
+            @endif
+        @endcan
         @can('banks.create')
-            <x-ui.button size="sm" href="{{ route('banks.create') }}"><x-ui.icon name="plus" /> Add account</x-ui.button>
+            @unless ($trashed)
+                <x-ui.button size="sm" href="{{ route('banks.create') }}"><x-ui.icon name="plus" /> Add account</x-ui.button>
+            @endunless
         @endcan
     </x-slot:actions>
 
     {{-- Account cards --}}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        @foreach ($banks as $b)
-            <x-ui.card class="overflow-hidden">
+        @forelse ($banks as $b)
+            <x-ui.card class="overflow-hidden {{ $trashed ? 'border-dashed opacity-90' : '' }}">
                 <x-ui.card-content class="pt-6">
                     <div class="flex items-start justify-between">
                         <div class="flex items-center gap-3">
@@ -20,24 +29,44 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-1">
-                            <span class="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-600">Active</span>
-                            @can('banks.update')
-                                <a href="{{ route('banks.edit', $b['id']) }}" title="Edit account"
-                                    class="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
-                                    <x-ui.icon name="pencil" class="size-4" />
-                                </a>
-                            @endcan
-                            @can('banks.delete')
-                                <form method="POST" action="{{ route('banks.destroy', $b['id']) }}" class="inline" data-delete-form>
+                            @if ($trashed)
+                                <span class="inline-flex items-center rounded-full bg-red-500/15 px-2 py-0.5 text-[11px] font-semibold text-red-600 dark:text-red-400">Deleted</span>
+                                <form method="POST" action="{{ route('trash.restore', ['type' => 'banks', 'id' => $b['id']]) }}" class="inline">
+                                    @csrf
+                                    <button type="submit" title="Restore account"
+                                        class="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                                        <x-ui.icon name="rotate-ccw" class="size-4" />
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('trash.destroy', ['type' => 'banks', 'id' => $b['id']]) }}" class="inline" data-delete-form>
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" title="Delete account"
-                                        data-confirm="Delete {{ $b['name'] }}? This action cannot be undone."
+                                    <button type="submit" title="Delete forever"
+                                        data-confirm="Permanently delete {{ $b['name'] }}? This cannot be undone."
                                         class="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
                                         <x-ui.icon name="trash-2" class="size-4" />
                                     </button>
                                 </form>
-                            @endcan
+                            @else
+                                <span class="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Active</span>
+                                @can('banks.update')
+                                    <a href="{{ route('banks.edit', $b['id']) }}" title="Edit account"
+                                        class="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                                        <x-ui.icon name="pencil" class="size-4" />
+                                    </a>
+                                @endcan
+                                @can('banks.delete')
+                                    <form method="POST" action="{{ route('banks.destroy', $b['id']) }}" class="inline" data-delete-form>
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" title="Delete account"
+                                            data-confirm="Delete {{ $b['name'] }}? This action cannot be undone."
+                                            class="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
+                                            <x-ui.icon name="trash-2" class="size-4" />
+                                        </button>
+                                    </form>
+                                @endcan
+                            @endif
                         </div>
                     </div>
                     <div class="mt-4">
@@ -50,10 +79,17 @@
                     </div>
                 </x-ui.card-content>
             </x-ui.card>
-        @endforeach
+        @empty
+            <x-ui.card class="sm:col-span-2 xl:col-span-4">
+                <x-ui.card-content class="py-12 text-center text-sm text-muted-foreground">
+                    {{ $trashed ? 'No deleted bank accounts.' : 'No bank accounts yet.' }}
+                </x-ui.card-content>
+            </x-ui.card>
+        @endforelse
     </div>
 
-    {{-- Account statement --}}
+    {{-- Account statement (hidden while browsing deleted accounts) --}}
+    @unless ($trashed)
     <div id="bank-txns-table-pagelen" hidden>
         <x-ui.combobox id="bankPageLen" value="10" width="w-32" searchPlaceholder="Rows…"
             :options="['10' => '10 rows', '25' => '25 rows', '50' => '50 rows', '100' => '100 rows']" />
@@ -75,4 +111,5 @@
     @push('scripts')
         {{ $dataTable->scripts(attributes: ['type' => 'module']) }}
     @endpush
+    @endunless
 </x-layouts.admin>

@@ -17,7 +17,4 @@ return [
     // Admin-only — hidden from users without the permission (see sidebar filter).
     ['label' => 'Users', 'icon' => 'users', 'route' => 'users', 'permission' => 'users.view'],
     ['label' => 'Roles', 'icon' => 'shield-check', 'route' => 'roles', 'permission' => 'roles.view'],
-
-    // Superadmin-only — trash.view is a hidden permission group (only the owner holds it).
-    ['label' => 'Trash', 'icon' => 'trash-2', 'route' => 'trash', 'permission' => 'trash.view'],
 ];

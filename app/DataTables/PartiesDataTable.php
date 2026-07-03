@@ -33,13 +33,19 @@ class PartiesDataTable extends BaseDataTable
                 'Active' => 'success',
                 'Inactive' => 'neutral',
             ]))
-            ->addColumn('action', fn ($row) => $this->gatedActions($row['id'], 'parties', route('parties.edit', $row['id']), route('parties.destroy', $row['id']), $row['name']))
+            ->addColumn('action', fn ($row) => $this->viewingTrash()
+                ? $this->trashActions('parties', $row['id'], $row['name'])
+                : $this->gatedActions($row['id'], 'parties', route('parties.edit', $row['id']), route('parties.destroy', $row['id']), $row['name']))
             ->rawColumns(['name', 'category', 'phone', 'opening', 'current', 'limit', 'status', 'action'])
             ->setRowId('name');
     }
 
     public function query(): Collection
     {
+        if ($this->viewingTrash()) {
+            return $this->parties->deleted();
+        }
+
         $rows = $this->parties->all();
         $category = request('category');
 
@@ -50,7 +56,7 @@ class PartiesDataTable extends BaseDataTable
     {
         return $this->baseBuilder('parties-table')
             ->columns($this->getColumns())
-            ->minifiedAjax('', 'data.category = document.getElementById("partyCategory")?.value || "";')
+            ->minifiedAjax('', 'data.category = document.getElementById("partyCategory")?.value || "";'.$this->trashedAjaxData('parties-table'))
             ->orderBy(0, 'asc');
     }
 

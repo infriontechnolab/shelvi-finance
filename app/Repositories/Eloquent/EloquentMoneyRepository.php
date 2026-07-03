@@ -22,9 +22,15 @@ class EloquentMoneyRepository implements MoneyRepository
         return $this->rows('paid', 'P');
     }
 
-    private function rows(string $direction, string $prefix): Collection
+    public function deleted(string $direction): Collection
     {
-        return Transaction::query()->where('direction', $direction)
+        return $this->rows($direction, $direction === 'received' ? 'R' : 'P', trashed: true);
+    }
+
+    private function rows(string $direction, string $prefix, bool $trashed = false): Collection
+    {
+        return Transaction::query()->when($trashed, fn ($q) => $q->onlyTrashed())
+            ->where('direction', $direction)
             ->with(['party' => fn ($q) => $q->withTrashed(), 'bank' => fn ($q) => $q->withTrashed()])
             ->orderByDesc('txn_date')
             ->orderByDesc('id')

@@ -15,7 +15,18 @@ class EloquentBankRepository implements BankRepository
 {
     public function all(): array
     {
-        return Bank::query()->orderBy('name')->get()->map(fn (Bank $b) => [
+        return Bank::query()->orderBy('name')->get()->map(fn (Bank $b) => $this->toCard($b))->all();
+    }
+
+    public function deleted(): array
+    {
+        return Bank::onlyTrashed()->orderBy('name')->get()->map(fn (Bank $b) => $this->toCard($b))->all();
+    }
+
+    /** @return array<string, mixed> */
+    private function toCard(Bank $b): array
+    {
+        return [
             'id' => $b->id,
             'name' => $b->name,
             'initials' => $b->initials,
@@ -23,7 +34,7 @@ class EloquentBankRepository implements BankRepository
             'holder' => $b->holder,
             'balance' => intdiv($b->currentBalance(), 100),
             'type' => $b->type,
-        ])->all();
+        ];
     }
 
     public function find(string $id): ?array

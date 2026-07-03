@@ -27,13 +27,19 @@ class ChequesDataTable extends BaseDataTable
                 'Pending' => 'warning',
                 'Bounced' => 'danger',
             ]))
-            ->addColumn('action', fn ($row) => $this->gatedActions($row['id'], 'cheques', route('cheques.edit', $row['id']), route('cheques.destroy', $row['id']), '#'.$row['no']))
+            ->addColumn('action', fn ($row) => $this->viewingTrash()
+                ? $this->trashActions('cheques', $row['id'], '#'.$row['no'])
+                : $this->gatedActions($row['id'], 'cheques', route('cheques.edit', $row['id']), route('cheques.destroy', $row['id']), '#'.$row['no']))
             ->rawColumns(['no', 'party', 'bank', 'amount', 'status', 'action'])
             ->setRowId('no');
     }
 
     public function query(): Collection
     {
+        if ($this->viewingTrash()) {
+            return $this->cheques->deleted();
+        }
+
         $rows = $this->cheques->all();
         $status = request('status');
 
@@ -44,7 +50,7 @@ class ChequesDataTable extends BaseDataTable
     {
         return $this->baseBuilder('cheques-table')
             ->columns($this->getColumns())
-            ->minifiedAjax('', 'data.status = document.getElementById("chequeStatus")?.value || "";')
+            ->minifiedAjax('', 'data.status = document.getElementById("chequeStatus")?.value || "";'.$this->trashedAjaxData('cheques-table'))
             ->orderBy(0, 'desc');
     }
 

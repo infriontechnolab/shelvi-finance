@@ -88,6 +88,34 @@ abstract class BaseDataTable extends DataTable
         return view("datatables.cells.$partial", $data)->render();
     }
 
+    // ---- Trash toggle -----------------------------------------------------
+    //  A superadmin-only "Show deleted" toggle on the page flips this table to
+    //  its soft-deleted rows (query() picks the repo's deleted() feed) and swaps
+    //  the row actions to Restore / Delete-forever.
+
+    /** Is the (superadmin) trash toggle currently on for this request? */
+    protected function viewingTrash(): bool
+    {
+        return filter_var(request('trashed'), FILTER_VALIDATE_BOOLEAN)
+            && (bool) auth()->user()?->can('trash.view');
+    }
+
+    /** JS for minifiedAjax: send `trashed` from the page's toggle button state. */
+    protected function trashedAjaxData(string $tableId): string
+    {
+        return 'data.trashed = document.getElementById("'.$tableId.'-trash")?.dataset.on === "1" ? 1 : "";';
+    }
+
+    /** Restore / delete-forever actions for a trashed row. */
+    protected function trashActions(string $type, string|int $id, ?string $label = null): string
+    {
+        return $this->cell('trash-actions', [
+            'restoreUrl' => route('trash.restore', ['type' => $type, 'id' => $id]),
+            'deleteUrl' => route('trash.destroy', ['type' => $type, 'id' => $id]),
+            'label' => $label ?? (string) $id,
+        ]);
+    }
+
     protected function avatar(string $name): string
     {
         return $this->cell('avatar', ['name' => $name]);

@@ -17,6 +17,11 @@ class EloquentPartyRepository implements PartyRepository
         return Party::query()->orderBy('name')->get()->map(fn (Party $p) => $this->toRow($p));
     }
 
+    public function deleted(): Collection
+    {
+        return Party::onlyTrashed()->orderBy('name')->get()->map(fn (Party $p) => $this->toRow($p));
+    }
+
     public function find(string $id): ?array
     {
         $party = Party::query()->find($id);

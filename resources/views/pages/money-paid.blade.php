@@ -1,5 +1,10 @@
 <x-layouts.admin title="Money Paid">
     <x-slot:subtitle>Record and track outbound payments to parties.</x-slot:subtitle>
+    @can('trash.view')
+        <x-slot:actions>
+            <x-trash-toggle table="paid-table" />
+        </x-slot:actions>
+    @endcan
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {{-- Entry form --}}
