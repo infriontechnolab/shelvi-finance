@@ -55,6 +55,21 @@ class EloquentLedgerRepository implements LedgerRepository
     public function summary(): LedgerSummary
     {
         $rows = $this->rows();
+
+        if ($rows->isEmpty()) {
+            $today = now()->format('Y-m-d');
+
+            return new LedgerSummary(
+                opening: 0,
+                totalDebit: 0,
+                totalCredit: 0,
+                closing: 0,
+                closingType: 'DR',
+                from: $today,
+                to: $today,
+            );
+        }
+
         $closing = $rows->last();
 
         return new LedgerSummary(
