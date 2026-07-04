@@ -6,26 +6,32 @@
     <title>Sign in — Shelvi Finance</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
-    {{-- No-flash theme boot (same as admin shell) --}}
-    <script>
-        (function () {
-            try {
-                var k = 'shelvi-theme', s = localStorage.getItem(k);
-                var dark = s === 'dark' || (!s && matchMedia('(prefers-color-scheme: dark)').matches);
-                document.documentElement.classList.toggle('dark', dark);
-            } catch (e) {}
-        })();
-    </script>
-
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-background font-sans text-foreground antialiased">
+<body class="min-h-screen bg-white font-sans text-gray-900 antialiased">
     <div class="flex min-h-screen">
 
         {{-- ───────────── Left: sign-in form ───────────── --}}
-        <div class="flex w-full flex-col justify-between p-6 sm:p-10 lg:w-1/2 lg:p-14">
+        <div class="relative flex w-full flex-col justify-between overflow-hidden bg-white p-6 sm:p-10 lg:w-1/2 lg:p-14">
+            {{-- Decorative icon watermark: each icon repeats 6× (once per row) at staggered positions across the panel --}}
+            @php
+                $watermarkIcons = ['landmark', 'wallet', 'trending-up', 'file-text', 'book-open', 'arrow-left-right', 'shield-check', 'users', 'calendar', 'file-spreadsheet'];
+                $rowTops = [6, 22, 38, 54, 70, 86];
+                $colLefts = [3, 13, 23, 33, 43, 53, 63, 73, 83, 93];
+            @endphp
+            <div aria-hidden="true" class="pointer-events-none absolute inset-0 select-none overflow-hidden text-slate-900/[0.06]">
+                @foreach ($rowTops as $r => $top)
+                    @php $shift = $r % 2 === 0 ? 0 : 5; @endphp
+                    @foreach ($colLefts as $c => $left)
+                        <i data-lucide="{{ $watermarkIcons[$c] }}"
+                            class="absolute size-5"
+                            style="top: {{ $top }}%; left: {{ min(95, $left + $shift) }}%; transform: rotate({{ (($r * 10 + $c) * 17) % 40 - 20 }}deg);"></i>
+                    @endforeach
+                @endforeach
+            </div>
+
             {{-- Brand --}}
-            <a href="{{ route('login') }}" class="flex items-center gap-2.5">
+            <a href="{{ route('login') }}" class="relative flex items-center gap-2.5">
                 <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white p-1 shadow-sm ring-1 ring-border">
                     <img src="/logo.svg" alt="Shelvi" class="size-full">
                 </span>
@@ -33,7 +39,7 @@
             </a>
 
             {{-- Form (vertically centered) --}}
-            <div class="mx-auto w-full max-w-sm py-10">
+            <div class="relative mx-auto w-full max-w-sm py-10">
                 <h1 class="font-display text-3xl font-bold tracking-tight">Welcome back</h1>
                 <p class="mt-2 text-sm text-muted-foreground">Enter your email and password to access your dashboard.</p>
 
@@ -84,7 +90,7 @@
             </div>
 
             {{-- Footer --}}
-            <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+            <div class="relative flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
                 <span>© {{ date('Y') }} Shelvi Finance</span>
                 <span class="inline-flex items-center gap-1.5">
                     <i data-lucide="shield-check" class="size-3.5"></i> Secure sign-in
@@ -93,7 +99,7 @@
         </div>
 
         {{-- ───────────── Right: brand panel ───────────── --}}
-        <div class="relative hidden w-1/2 overflow-hidden bg-gradient-to-br from-[#D9531A] via-[#B23A1E] to-[#241C4A] p-14 text-white lg:flex lg:flex-col lg:items-center lg:justify-center">
+        <div class="relative hidden w-1/2 overflow-hidden bg-gradient-to-br from-[#16233F] via-[#1E3A66] to-[#2C2359] p-14 text-white lg:flex lg:flex-col lg:items-center lg:justify-center">
             {{-- subtle dot texture + soft flourishes --}}
             <div aria-hidden="true" class="pointer-events-none absolute inset-0 opacity-[0.10]"
                 style="background-image: radial-gradient(circle at 1px 1px, #fff 1px, transparent 0); background-size: 22px 22px;"></div>
