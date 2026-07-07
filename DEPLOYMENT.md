@@ -59,3 +59,8 @@ php artisan config:cache && php artisan route:cache && php artisan view:cache
 php artisan permission:cache-reset
 ```
 Blade/CSS/JS changed → rebuild locally (`npm install && npm run build`), upload `public/build/`.
+
+## Auto-deploy (GitHub Actions)
+Every push to `main` triggers `.github/workflows/deploy.yml`: builds assets, rsyncs to the server,
+runs `composer install`, `migrate --force`, and rebuilds caches. Requires repo secrets `SSH_HOST`,
+`SSH_PORT`, `SSH_USER`, `SSH_PRIVATE_KEY`, `DEPLOY_PATH`. Check progress under the repo's Actions tab.
