@@ -78,6 +78,11 @@
                         <x-ui.combobox id="t-status" name="status" width="w-full" placeholder="Select status…"
                             :value="$val('status', $transaction->status)" :options="$statuses" />
                     </div>
+
+                    <div class="space-y-1.5 sm:col-span-2">
+                        <x-ui.label for="t-remark">Remark</x-ui.label>
+                        <x-ui.textarea id="t-remark" name="remark" rows="2" placeholder="Purpose of this entry, e.g. token money">{{ $val('remark', $transaction->remark) }}</x-ui.textarea>
+                    </div>
                 </div>
 
                 <div class="flex gap-2 border-t border-border pt-5">

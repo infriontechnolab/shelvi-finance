@@ -142,6 +142,12 @@ abstract class BaseDataTable extends DataTable
         return $this->cell('text', ['value' => $text, 'variant' => 'muted']);
     }
 
+    /** Free-text remark: truncated with the full text available on hover. */
+    protected function remark(?string $text): string
+    {
+        return $this->cell('remark', ['value' => $text]);
+    }
+
     /** Plain INR amount (tabular), no sign colouring. */
     protected function money(int|float $n): string
     {

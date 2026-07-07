@@ -28,6 +28,7 @@ class ReceivedDataTable extends BaseDataTable
             ]))
             ->editColumn('bank', fn ($row) => $this->muted($row['bank']))
             ->editColumn('ref', fn ($row) => $this->mono($row['ref']))
+            ->editColumn('remark', fn ($row) => $this->remark($row['remark']))
             ->editColumn('amount', fn ($row) => $this->amount($row['amount'], 'positive'))
             ->editColumn('status', fn ($row) => $this->statusPill($row['status'], [
                 'Cleared' => 'success',
@@ -39,7 +40,7 @@ class ReceivedDataTable extends BaseDataTable
                     $row['id'], 'transactions',
                     route('transactions.edit', $row['tid']), route('transactions.destroy', $row['tid']), $row['id']
                 ))
-            ->rawColumns(['id', 'party', 'method', 'bank', 'ref', 'amount', 'status', 'action'])
+            ->rawColumns(['id', 'party', 'method', 'bank', 'ref', 'remark', 'amount', 'status', 'action'])
             ->setRowId('id');
     }
 
@@ -65,6 +66,7 @@ class ReceivedDataTable extends BaseDataTable
             Column::make('method')->title('Method'),
             Column::make('bank')->title('Bank'),
             Column::make('ref')->title('Reference'),
+            Column::make('remark')->title('Remark'),
             Column::make('status')->title('Status'),
             Column::make('amount')->title('Amount')->addClass('text-right'),
             Column::computed('action')->title('')->addClass('text-right')->orderable(false)->searchable(false)->width(80),
