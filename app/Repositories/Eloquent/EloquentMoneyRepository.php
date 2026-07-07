@@ -45,6 +45,7 @@ class EloquentMoneyRepository implements MoneyRepository
                 'ref' => $t->reference,
                 'amount' => intdiv($t->amount, 100),
                 'status' => $t->status,
+                'remark' => $t->remark,
             ]);
     }
 }

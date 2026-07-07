@@ -35,7 +35,7 @@ class BankTxnsDataTable extends BaseDataTable
     {
         return $this->baseBuilder('bank-txns-table')
             ->columns($this->getColumns())
-            ->orderBy(0, 'desc');
+            ->orderBy(1, 'desc');
     }
 
     public function getColumns(): array

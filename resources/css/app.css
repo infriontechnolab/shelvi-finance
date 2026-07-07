@@ -245,6 +245,9 @@ table.dataTable thead th {
 }
 table.dataTable thead th:first-child { border-top-left-radius: var(--radius-md); }
 table.dataTable thead th:last-child { border-top-right-radius: var(--radius-md); }
+
+/* Bank statement: right-align Credit/Debit/Balance headers to match their values */
+#bank-txns-table thead th.text-right { text-align: right; }
 table.dataTable tbody td {
     padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--color-border);

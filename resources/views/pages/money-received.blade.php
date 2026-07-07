@@ -52,6 +52,15 @@
                         <x-ui.label for="r-date">Date <span class="text-destructive">*</span></x-ui.label>
                         <x-ui.datepicker id="r-date" name="date" :value="old('date')" :required="true" />
                     </div>
+                    <div class="space-y-1.5">
+                        <x-ui.label for="r-status">Status</x-ui.label>
+                        <x-ui.combobox id="r-status" name="status" width="w-full" placeholder="Select status…"
+                            :value="old('status')" :options="$statuses" />
+                    </div>
+                    <div class="space-y-1.5">
+                        <x-ui.label for="r-remark">Remark</x-ui.label>
+                        <x-ui.textarea id="r-remark" name="remark" rows="2" placeholder="Purpose of this receipt, e.g. token money">{{ old('remark') }}</x-ui.textarea>
+                    </div>
                     <div class="flex gap-2 pt-2">
                         <x-ui.button type="submit" size="sm" class="flex-1"><x-ui.icon name="check" /> Save receipt</x-ui.button>
                         <x-ui.button type="reset" variant="outline" size="sm">Clear</x-ui.button>
