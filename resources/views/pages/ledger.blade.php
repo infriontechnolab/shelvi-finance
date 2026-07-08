@@ -11,7 +11,7 @@
             ['label' => 'Opening Balance', 'value' => $summary->opening, 'tone' => ''],
             ['label' => 'Total Debit', 'value' => $summary->totalDebit, 'tone' => 'text-destructive'],
             ['label' => 'Total Credit', 'value' => $summary->totalCredit, 'tone' => 'text-emerald-600'],
-            ['label' => 'Closing Balance', 'value' => $summary->closing, 'tone' => '', 'badge' => $summary->closingType],
+            ['label' => 'Closing Balance', 'value' => $summary->closing, 'tone' => $summary->closingType === 'DR' ? 'text-destructive' : 'text-emerald-600', 'badge' => $summary->closingType],
         ];
     @endphp
 
@@ -24,7 +24,7 @@
                     <p class="num mt-1 font-mono text-xl font-bold tabular-nums {{ $c['tone'] }}">
                         {{ \App\Support\Inr::format($c['value']) }}
                         @isset($c['badge'])
-                            <span class="inline-flex items-center rounded-full bg-sky-500/15 px-2 py-0.5 align-middle text-[11px] font-semibold text-sky-600">{{ $c['badge'] }}</span>
+                            <span class="inline-flex items-center rounded-full px-2 py-0.5 align-middle text-[11px] font-semibold {{ $c['badge'] === 'DR' ? 'bg-destructive/15 text-destructive' : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' }}">{{ $c['badge'] }}</span>
                         @endisset
                     </p>
                 </x-ui.card-content>
@@ -50,5 +50,12 @@
 
     @push('scripts')
         {{ $dataTable->scripts(attributes: ['type' => 'module']) }}
+        <script>
+            document.getElementById('ledgerParty')?.addEventListener('change', (e) => {
+                const party = e.target.value;
+                if (!party) return;
+                window.location.href = '{{ route('ledger') }}?party=' + encodeURIComponent(party);
+            });
+        </script>
     @endpush
 </x-layouts.admin>

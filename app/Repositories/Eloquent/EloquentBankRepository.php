@@ -51,7 +51,7 @@ class EloquentBankRepository implements BankRepository
             'initials' => $bank->initials,
             'account' => $bank->account_number,   // full, for editing
             'holder' => $bank->holder,
-            'balance' => intdiv($bank->opening_balance, 100),  // editable opening; running balance is derived
+            'balance' => intdiv($bank->currentBalance(), 100),  // running balance, read-only on the edit form
             'type' => $bank->type,
         ];
     }

@@ -7,9 +7,9 @@ use Illuminate\Support\Collection;
 
 interface LedgerRepository
 {
-    public function rows(): Collection;
+    public function rows(?string $party = null): Collection;
 
-    public function summary(): LedgerSummary;
+    public function summary(?string $party = null): LedgerSummary;
 
     public function defaultParty(): string;
 }

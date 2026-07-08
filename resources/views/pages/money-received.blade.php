@@ -30,6 +30,10 @@
                             :value="old('party')" :options="['' => 'Select party…'] + $parties" />
                     </div>
                     <div class="space-y-1.5">
+                        <x-ui.label for="r-customer">Customer Name</x-ui.label>
+                        <x-ui.input id="r-customer" name="customer" placeholder="Customer name" value="{{ old('customer') }}" />
+                    </div>
+                    <div class="space-y-1.5">
                         <x-ui.label for="r-amount">Amount (₹) <span class="text-destructive">*</span></x-ui.label>
                         <x-ui.input id="r-amount" name="amount" type="number" min="0" placeholder="0" required value="{{ old('amount') }}"
                             class="num font-mono tabular-nums user-invalid:border-destructive user-invalid:ring-destructive/20" />
@@ -53,9 +57,9 @@
                         <x-ui.datepicker id="r-date" name="date" :value="old('date')" :required="true" />
                     </div>
                     <div class="space-y-1.5">
-                        <x-ui.label for="r-status">Status</x-ui.label>
-                        <x-ui.combobox id="r-status" name="status" width="w-full" placeholder="Select status…"
-                            :value="old('status')" :options="$statuses" />
+                        <x-ui.label for="r-status">Status <span class="text-destructive">*</span></x-ui.label>
+                        <x-ui.combobox id="r-status" name="status" width="w-full" placeholder="Select status…" :required="true"
+                            :value="old('status')" :options="['' => 'Select status…'] + $statuses" />
                     </div>
                     <div class="space-y-1.5">
                         <x-ui.label for="r-remark">Remark</x-ui.label>

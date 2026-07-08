@@ -25,9 +25,9 @@ class PartiesDataTable extends BaseDataTable
                 'Finance Co' => 'indigo',
                 'Agency' => 'warning',
             ]))
-            ->editColumn('phone', fn ($row) => $this->mono($row['phone']))
+            ->editColumn('phone', fn ($row) => $row['phone'] ? $this->mono($row['phone']) : $this->muted('—'))
             ->editColumn('opening', fn ($row) => $this->money($row['opening']))
-            ->editColumn('current', fn ($row) => $this->amount($row['current'], 'plain').' '.$this->drCr($row['balType']))
+            ->editColumn('current', fn ($row) => $this->amount($row['current'], $row['balType'] === 'CR' ? 'negative' : 'positive').' '.$this->drCr($row['balType']))
             ->editColumn('limit', fn ($row) => $this->money($row['limit']))
             ->editColumn('status', fn ($row) => $this->statusPill($row['status'], [
                 'Active' => 'success',

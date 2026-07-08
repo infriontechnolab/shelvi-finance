@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\DataTables\LedgerDataTable;
 use App\Repositories\Contracts\LedgerRepository;
 use App\Repositories\Contracts\PartyRepository;
+use Illuminate\Http\Request;
 
 class LedgerController extends Controller
 {
@@ -13,12 +14,14 @@ class LedgerController extends Controller
         private readonly PartyRepository $parties,
     ) {}
 
-    public function index(LedgerDataTable $dataTable)
+    public function index(Request $request, LedgerDataTable $dataTable)
     {
+        $party = $request->query('party');
+
         return $dataTable->render('pages.ledger', [
             'parties' => $this->parties->options(),
-            'ledgerParty' => $this->ledger->defaultParty(),
-            'summary' => $this->ledger->summary(),
+            'ledgerParty' => $party ?: $this->ledger->defaultParty(),
+            'summary' => $this->ledger->summary($party),
         ]);
     }
 }

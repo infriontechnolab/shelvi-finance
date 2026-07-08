@@ -13,23 +13,25 @@ use Illuminate\Support\Collection;
  */
 class EloquentLedgerRepository implements LedgerRepository
 {
-    public function rows(): Collection
+    public function rows(?string $party = null): Collection
     {
-        $party = $this->party();
+        $p = $this->party($party);
 
-        if (! $party) {
+        if (! $p) {
             return collect();
         }
 
-        $running = $party->opening_balance;
-        $entries = $party->ledgerEntries()->orderBy('entry_date')->orderBy('id')->get();
+        $running = $p->opening_balance;
+        $entries = $p->ledgerEntries()->with('transaction')->orderBy('entry_date')->orderBy('id')->get();
 
         // Opening-balance row (mirrors the original ledger's first line).
         $openDate = $entries->first()?->entry_date?->format('Y-m-d') ?? now()->format('Y-m-d');
         $rows = collect([[
             'date' => $openDate,
             'particulars' => 'Opening Balance',
+            'customer' => '-',
             'vch' => '-',
+            'remark' => '-',
             'debit' => 0,
             'credit' => 0,
             'balance' => intdiv(abs($running), 100),  // magnitude; side shown via balType
@@ -41,7 +43,9 @@ class EloquentLedgerRepository implements LedgerRepository
             $rows->push([
                 'date' => $e->entry_date->format('Y-m-d'),
                 'particulars' => $e->particulars,
+                'customer' => $e->transaction?->customer_name ?: '-',
                 'vch' => $e->vch ?? '-',
+                'remark' => $e->transaction?->remark ?: '-',
                 'debit' => intdiv($e->debit, 100),
                 'credit' => intdiv($e->credit, 100),
                 'balance' => intdiv(abs($running), 100),  // magnitude; side shown via balType
@@ -52,9 +56,9 @@ class EloquentLedgerRepository implements LedgerRepository
         return $rows;
     }
 
-    public function summary(): LedgerSummary
+    public function summary(?string $party = null): LedgerSummary
     {
-        $rows = $this->rows();
+        $rows = $this->rows($party);
 
         if ($rows->isEmpty()) {
             $today = now()->format('Y-m-d');
@@ -88,9 +92,16 @@ class EloquentLedgerRepository implements LedgerRepository
         return $this->party()?->name ?? '';
     }
 
-    /** The party whose ledger is shown: first with journal entries, else first party. */
-    private function party(): ?Party
+    /**
+     * The party whose ledger is shown: the requested one by name if found,
+     * else the first with journal entries, else the first party.
+     */
+    private function party(?string $name = null): ?Party
     {
+        if ($name && $found = Party::query()->where('name', $name)->first()) {
+            return $found;
+        }
+
         return Party::query()->whereHas('ledgerEntries')->orderBy('id')->first()
             ?? Party::query()->orderBy('name')->first();
     }

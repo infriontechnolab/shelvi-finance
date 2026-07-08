@@ -168,10 +168,10 @@ abstract class BaseDataTable extends DataTable
         return $this->cell('amount', ['value' => Inr::format($n), 'tone' => $tone, 'bold' => true]);
     }
 
-    /** DR/CR balance-type pill. */
-    protected function drCr(string $type): string
+    /** DR/CR balance-type pill. $scheme 'asset' (default): DR=green/CR=red. 'entry': DR=red/CR=green. */
+    protected function drCr(string $type, string $scheme = 'asset'): string
     {
-        return $this->cell('dr-cr', ['type' => $type]);
+        return $this->cell('dr-cr', ['type' => $type, 'scheme' => $scheme]);
     }
 
     /**
