@@ -63,8 +63,17 @@
                     <div class="space-y-1.5">
                         <x-ui.label for="b-balance">{{ $isEdit ? 'Current Balance (₹)' : 'Opening Balance (₹)' }}</x-ui.label>
                         <x-ui.input id="b-balance" name="balance" type="number" min="0" value="{{ $val('balance', 0) }}" placeholder="0"
+                            :disabled="$isEdit"
                             class="num font-mono tabular-nums" />
                     </div>
+
+                    @if ($isEdit)
+                        <div class="space-y-1.5">
+                            <x-ui.label for="b-deposit">Deposit Money (₹)</x-ui.label>
+                            <x-ui.input id="b-deposit" name="deposit" type="number" min="0" value="{{ $val('deposit', 0) }}" placeholder="0"
+                                class="num font-mono tabular-nums" />
+                        </div>
+                    @endif
                 </div>
 
                 <div class="flex gap-2 border-t border-border pt-5">

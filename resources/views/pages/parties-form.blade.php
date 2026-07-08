@@ -49,23 +49,25 @@
                             :value="$val('category')" :options="['' => 'Select category…'] + $categories" />
                     </div>
 
-                    <div class="space-y-1.5">
-                        <x-ui.label for="p-phone">Phone <span class="text-destructive">*</span></x-ui.label>
-                        <x-ui.input id="p-phone" name="phone" type="tel" value="{{ $val('phone') }}" placeholder="10-digit mobile" required
-                            class="font-mono user-invalid:border-destructive user-invalid:ring-destructive/20" />
-                    </div>
+                    @if ($isEdit)
+                        <div class="space-y-1.5">
+                            <x-ui.label for="p-phone">Phone <span class="text-destructive">*</span></x-ui.label>
+                            <x-ui.input id="p-phone" name="phone" type="tel" value="{{ $val('phone') }}" placeholder="10-digit mobile" required
+                                class="font-mono user-invalid:border-destructive user-invalid:ring-destructive/20" />
+                        </div>
 
-                    <div class="space-y-1.5">
-                        <x-ui.label for="p-opening">Opening Balance (₹)</x-ui.label>
-                        <x-ui.input id="p-opening" name="opening" type="number" min="0" value="{{ $val('opening', 0) }}" placeholder="0"
-                            class="num font-mono tabular-nums" />
-                    </div>
+                        <div class="space-y-1.5">
+                            <x-ui.label for="p-opening">Opening Balance (₹)</x-ui.label>
+                            <x-ui.input id="p-opening" name="opening" type="number" min="0" value="{{ $val('opening', 0) }}" placeholder="0"
+                                class="num font-mono tabular-nums" />
+                        </div>
 
-                    <div class="space-y-1.5">
-                        <x-ui.label for="p-baltype">Balance Type</x-ui.label>
-                        <x-ui.combobox id="p-baltype" name="balType" width="w-full" placeholder="DR / CR"
-                            :value="$val('balType', 'DR')" :options="$balTypes" />
-                    </div>
+                        <div class="space-y-1.5">
+                            <x-ui.label for="p-baltype">Balance Type</x-ui.label>
+                            <x-ui.combobox id="p-baltype" name="balType" width="w-full" placeholder="DR / CR"
+                                :value="$val('balType', 'DR')" :options="$balTypes" />
+                        </div>
+                    @endif
 
                     <div class="space-y-1.5">
                         <x-ui.label for="p-limit">Credit Limit (₹)</x-ui.label>

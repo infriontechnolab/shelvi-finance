@@ -27,7 +27,7 @@ class PaidDataTable extends BaseDataTable
                 'Cash' => 'success',
             ]))
             ->editColumn('bank', fn ($row) => $this->muted($row['bank']))
-            ->editColumn('ref', fn ($row) => $this->mono($row['ref']))
+            ->editColumn('ref', fn ($row) => $row['ref'] ? $this->mono($row['ref']) : $this->muted('—'))
             ->editColumn('remark', fn ($row) => $this->remark($row['remark']))
             ->editColumn('amount', fn ($row) => $this->amount($row['amount'], 'negative'))
             ->editColumn('status', fn ($row) => $this->statusPill($row['status'], [

@@ -53,6 +53,17 @@ class BankController extends Controller
     {
         $bank->update($request->toModel());
 
+        if ($deposit = $request->depositAmount()) {
+            $bank->transactions()->create([
+                'direction' => 'received',
+                'method' => 'Cash',
+                'amount' => $deposit,
+                'status' => 'Cleared',
+                'txn_date' => now(),
+                'description' => 'Manual deposit',
+            ]);
+        }
+
         return redirect()->route('banks')->with('success', 'Bank account updated.');
     }
 

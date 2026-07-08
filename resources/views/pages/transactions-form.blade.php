@@ -43,6 +43,12 @@
                     </div>
 
                     <div class="space-y-1.5">
+                        <x-ui.label for="t-customer">Customer Name</x-ui.label>
+                        <x-ui.input id="t-customer" name="customer" placeholder="Customer name"
+                            value="{{ $val('customer', $transaction->customer_name) }}" />
+                    </div>
+
+                    <div class="space-y-1.5">
                         <x-ui.label for="t-amount">Amount (₹) <span class="text-destructive">*</span></x-ui.label>
                         <x-ui.input id="t-amount" name="amount" type="number" min="0" required
                             value="{{ $val('amount', intdiv($transaction->amount, 100)) }}"
@@ -74,9 +80,9 @@
                     </div>
 
                     <div class="space-y-1.5">
-                        <x-ui.label for="t-status">Status</x-ui.label>
-                        <x-ui.combobox id="t-status" name="status" width="w-full" placeholder="Select status…"
-                            :value="$val('status', $transaction->status)" :options="$statuses" />
+                        <x-ui.label for="t-status">Status <span class="text-destructive">*</span></x-ui.label>
+                        <x-ui.combobox id="t-status" name="status" width="w-full" placeholder="Select status…" :required="true"
+                            :value="$val('status', $transaction->status)" :options="['' => 'Select status…'] + $statuses" />
                     </div>
 
                     <div class="space-y-1.5 sm:col-span-2">
