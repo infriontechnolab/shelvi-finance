@@ -89,6 +89,8 @@ class EloquentBankRepository implements BankRepository
 
     public function options(): array
     {
-        return Bank::query()->orderBy('name')->pluck('name', 'name')->all();
+        return Bank::query()->orderBy('name')->get()
+            ->mapWithKeys(fn (Bank $b) => [$b->name => "{$b->name} ({$b->account_number})"])
+            ->all();
     }
 }

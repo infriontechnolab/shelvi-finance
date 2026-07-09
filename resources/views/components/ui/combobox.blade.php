@@ -23,8 +23,11 @@
         <x-ui.icon name="chevrons-up-down" class="size-4 shrink-0 opacity-50" />
     </button>
 
+    {{-- Dims whatever's behind the popover so it never looks fused with nearby cards. --}}
+    <div data-combobox-backdrop hidden class="fixed inset-0 z-40 bg-black/20"></div>
+
     <div data-combobox-popover hidden
-        class="absolute left-0 z-50 mt-1 w-full min-w-[12rem] overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md">
+        class="absolute left-0 z-50 mt-1 w-full min-w-[12rem] overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-lg">
         <div class="flex items-center border-b border-border px-3">
             <x-ui.icon name="search" class="size-4 shrink-0 opacity-50" />
             <input type="text" data-combobox-search placeholder="{{ $searchPlaceholder }}"
