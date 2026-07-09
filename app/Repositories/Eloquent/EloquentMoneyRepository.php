@@ -43,6 +43,8 @@ class EloquentMoneyRepository implements MoneyRepository
                 'method' => $t->method,
                 'bank' => $t->bank?->name,
                 'ref' => $t->reference,
+                'payeeHolder' => $t->payee_holder,
+                'payeeAccount' => $t->payee_account_no,
                 'amount' => intdiv($t->amount, 100),
                 'status' => $t->status,
                 'remark' => $t->remark,
