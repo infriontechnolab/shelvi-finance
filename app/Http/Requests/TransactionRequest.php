@@ -29,7 +29,6 @@ class TransactionRequest extends FormRequest
             'ref' => ['nullable', 'string', 'max:100'],
             'remark' => ['nullable', 'string', 'max:1000'],
             'date' => ['required', 'date'],
-            'status' => ['required', Rule::in(array_keys(config('options.transaction_statuses')))],
         ];
     }
 
@@ -50,7 +49,8 @@ class TransactionRequest extends FormRequest
             'reference' => $this->input('ref') ?: null,
             'remark' => $this->input('remark') ?: null,
             'txn_date' => $this->input('date'),
-            'status' => $this->input('status'),
+            // No status field in the UI — every receipt/payment posts as Cleared.
+            'status' => 'Cleared',
         ];
     }
 }

@@ -370,6 +370,11 @@ function filterCombobox(box) {
     if (empty) empty.hidden = visible > 0;
 }
 
+function closeComboboxPopover(pop) {
+    pop.hidden = true;
+    pop.closest('[data-combobox]')?.querySelector('[data-combobox-backdrop]')?.setAttribute('hidden', '');
+}
+
 function selectComboboxItem(item) {
     const box = item.closest('[data-combobox]');
     const input = box.querySelector('[data-combobox-input]');
@@ -378,7 +383,7 @@ function selectComboboxItem(item) {
     label.textContent = item.dataset.label;
     label.classList.toggle('text-muted-foreground', item.dataset.value === '');
     box.querySelectorAll('[data-combobox-item]').forEach((i) => i.setAttribute('aria-selected', i === item ? 'true' : 'false'));
-    box.querySelector('[data-combobox-popover]').hidden = true;
+    closeComboboxPopover(box.querySelector('[data-combobox-popover]'));
     input.dispatchEvent(new Event('change', { bubbles: true }));
 
     // Re-run validation for this field once the form has been validated at least once.
@@ -396,20 +401,20 @@ document.addEventListener('click', (e) => {
         const box = trigger.closest('[data-combobox]');
         const pop = box.querySelector('[data-combobox-popover]');
         const wasOpen = !pop.hidden;
-        openPops.forEach((p) => (p.hidden = true));
-        pop.hidden = wasOpen;
-        if (!wasOpen) {
-            const s = pop.querySelector('[data-combobox-search]');
-            if (s) { s.value = ''; filterCombobox(box); setTimeout(() => s.focus(), 0); }
-        }
+        openPops.forEach(closeComboboxPopover);
+        if (wasOpen) return;
+        pop.hidden = false;
+        box.querySelector('[data-combobox-backdrop]')?.removeAttribute('hidden');
+        const s = pop.querySelector('[data-combobox-search]');
+        if (s) { s.value = ''; filterCombobox(box); setTimeout(() => s.focus(), 0); }
         return;
     }
 
     const item = e.target.closest('[data-combobox-item]');
     if (item) { selectComboboxItem(item); return; }
 
-    // Click outside any combobox closes open popovers.
-    if (!e.target.closest('[data-combobox]')) openPops.forEach((p) => (p.hidden = true));
+    // Click outside any combobox (including on its own backdrop) closes open popovers.
+    if (!e.target.closest('[data-combobox-popover], [data-combobox-trigger]')) openPops.forEach(closeComboboxPopover);
 });
 
 document.addEventListener('input', (e) => {

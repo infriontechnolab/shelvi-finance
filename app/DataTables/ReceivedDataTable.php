@@ -65,7 +65,7 @@ class ReceivedDataTable extends BaseDataTable
             Column::make('party')->title('Party'),
             Column::make('method')->title('Method'),
             Column::make('bank')->title('Bank'),
-            Column::make('ref')->title('Reference'),
+            Column::make('ref')->title('Vehicle No'),
             Column::make('remark')->title('Remark'),
             Column::make('status')->title('Status'),
             Column::make('amount')->title('Amount')->addClass('text-right'),

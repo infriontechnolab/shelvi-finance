@@ -121,7 +121,6 @@ class MoneyController extends Controller
             'parties' => $this->parties->options(),
             'banksList' => $this->banks->options(),
             'methods' => config('options.payment_methods'),
-            'statuses' => config('options.transaction_statuses'),
         ];
     }
 }

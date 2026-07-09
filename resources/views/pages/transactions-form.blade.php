@@ -68,8 +68,8 @@
                     </div>
 
                     <div class="space-y-1.5">
-                        <x-ui.label for="t-ref">Reference No</x-ui.label>
-                        <x-ui.input id="t-ref" name="ref" placeholder="NEFT / UPI / Cheque ref" class="font-mono"
+                        <x-ui.label for="t-ref">Vehicle No</x-ui.label>
+                        <x-ui.input id="t-ref" name="ref" placeholder="e.g. GJ01AB1234" class="font-mono"
                             value="{{ $val('ref', $transaction->reference) }}" />
                     </div>
 
@@ -77,12 +77,6 @@
                         <x-ui.label for="t-date">Date <span class="text-destructive">*</span></x-ui.label>
                         <x-ui.datepicker id="t-date" name="date" :required="true"
                             :value="$val('date', $transaction->txn_date?->format('Y-m-d'))" />
-                    </div>
-
-                    <div class="space-y-1.5">
-                        <x-ui.label for="t-status">Status <span class="text-destructive">*</span></x-ui.label>
-                        <x-ui.combobox id="t-status" name="status" width="w-full" placeholder="Select status…" :required="true"
-                            :value="$val('status', $transaction->status)" :options="['' => 'Select status…'] + $statuses" />
                     </div>
 
                     <div class="space-y-1.5 sm:col-span-2">

@@ -49,17 +49,12 @@
                             :value="old('bank')" :options="['' => 'Select bank…'] + $banksList" />
                     </div>
                     <div class="space-y-1.5">
-                        <x-ui.label for="r-ref">Reference No</x-ui.label>
-                        <x-ui.input id="r-ref" name="ref" placeholder="NEFT / UPI / Cheque ref" class="font-mono" value="{{ old('ref') }}" />
+                        <x-ui.label for="r-ref">Vehicle No</x-ui.label>
+                        <x-ui.input id="r-ref" name="ref" placeholder="e.g. GJ01AB1234" class="font-mono" value="{{ old('ref') }}" />
                     </div>
                     <div class="space-y-1.5">
                         <x-ui.label for="r-date">Date <span class="text-destructive">*</span></x-ui.label>
                         <x-ui.datepicker id="r-date" name="date" :value="old('date')" :required="true" />
-                    </div>
-                    <div class="space-y-1.5">
-                        <x-ui.label for="r-status">Status <span class="text-destructive">*</span></x-ui.label>
-                        <x-ui.combobox id="r-status" name="status" width="w-full" placeholder="Select status…" :required="true"
-                            :value="old('status')" :options="['' => 'Select status…'] + $statuses" />
                     </div>
                     <div class="space-y-1.5">
                         <x-ui.label for="r-remark">Remark</x-ui.label>
