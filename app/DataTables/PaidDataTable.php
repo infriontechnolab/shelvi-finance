@@ -28,6 +28,8 @@ class PaidDataTable extends BaseDataTable
             ]))
             ->editColumn('bank', fn ($row) => $this->muted($row['bank']))
             ->editColumn('ref', fn ($row) => $row['ref'] ? $this->mono($row['ref']) : $this->muted('—'))
+            ->editColumn('payeeHolder', fn ($row) => $row['payeeHolder'] ? $this->mono($row['payeeHolder']) : $this->muted('—'))
+            ->editColumn('payeeAccount', fn ($row) => $row['payeeAccount'] ? $this->mono($row['payeeAccount']) : $this->muted('—'))
             ->editColumn('remark', fn ($row) => $this->remark($row['remark']))
             ->editColumn('amount', fn ($row) => $this->amount($row['amount'], 'negative'))
             ->editColumn('status', fn ($row) => $this->statusPill($row['status'], [
@@ -40,7 +42,7 @@ class PaidDataTable extends BaseDataTable
                     $row['id'], 'transactions',
                     route('transactions.edit', $row['tid']), route('transactions.destroy', $row['tid']), $row['id']
                 ))
-            ->rawColumns(['id', 'party', 'method', 'bank', 'ref', 'remark', 'amount', 'status', 'action'])
+            ->rawColumns(['id', 'party', 'method', 'bank', 'ref', 'payeeHolder', 'payeeAccount', 'remark', 'amount', 'status', 'action'])
             ->setRowId('id');
     }
 
@@ -66,6 +68,8 @@ class PaidDataTable extends BaseDataTable
             Column::make('method')->title('Method'),
             Column::make('bank')->title('Bank'),
             Column::make('ref')->title('Vehicle No'),
+            Column::make('payeeHolder')->title('Account Holder'),
+            Column::make('payeeAccount')->title('Account No'),
             Column::make('remark')->title('Remark'),
             Column::make('status')->title('Status'),
             Column::make('amount')->title('Amount')->addClass('text-right'),

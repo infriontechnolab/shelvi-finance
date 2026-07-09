@@ -67,6 +67,20 @@
                             :value="$val('bank', $transaction->bank?->name)" :options="['' => 'Select bank…'] + $banksList" />
                     </div>
 
+                    @unless ($isReceived)
+                        <div class="space-y-1.5">
+                            <x-ui.label for="t-payee-holder">Account Holder Name</x-ui.label>
+                            <x-ui.input id="t-payee-holder" name="payee_holder" placeholder="Payee's account holder name"
+                                value="{{ $val('payee_holder', $transaction->payee_holder) }}" />
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <x-ui.label for="t-payee-account">Account Number</x-ui.label>
+                            <x-ui.input id="t-payee-account" name="payee_account" placeholder="Payee's account number" class="font-mono"
+                                value="{{ $val('payee_account', $transaction->payee_account_no) }}" />
+                        </div>
+                    @endunless
+
                     <div class="space-y-1.5">
                         <x-ui.label for="t-ref">Vehicle No</x-ui.label>
                         <x-ui.input id="t-ref" name="ref" placeholder="e.g. GJ01AB1234" class="font-mono"

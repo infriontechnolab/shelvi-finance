@@ -49,6 +49,14 @@
                             :value="old('bank')" :options="['' => 'Select bank…'] + $banksList" />
                     </div>
                     <div class="space-y-1.5">
+                        <x-ui.label for="p-payee-holder">Account Holder Name</x-ui.label>
+                        <x-ui.input id="p-payee-holder" name="payee_holder" placeholder="Payee's account holder name" value="{{ old('payee_holder') }}" />
+                    </div>
+                    <div class="space-y-1.5">
+                        <x-ui.label for="p-payee-account">Account Number</x-ui.label>
+                        <x-ui.input id="p-payee-account" name="payee_account" placeholder="Payee's account number" class="font-mono" value="{{ old('payee_account') }}" />
+                    </div>
+                    <div class="space-y-1.5">
                         <x-ui.label for="p-ref">Vehicle No</x-ui.label>
                         <x-ui.input id="p-ref" name="ref" placeholder="e.g. GJ01AB1234" class="font-mono" value="{{ old('ref') }}" />
                     </div>

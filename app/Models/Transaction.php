@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * A money movement (received or paid). Bank statement, party ledger, and
  * dashboard aggregates are all queries over this table. amount is paise, positive.
  */
-#[Fillable(['reference', 'direction', 'party_id', 'customer_name', 'bank_id', 'method', 'amount', 'status', 'txn_date', 'description', 'remark', 'cheque_id'])]
+#[Fillable(['reference', 'direction', 'party_id', 'customer_name', 'payee_holder', 'payee_account_no', 'bank_id', 'method', 'amount', 'status', 'txn_date', 'description', 'remark', 'cheque_id'])]
 class Transaction extends Model
 {
     use SoftDeletes;
