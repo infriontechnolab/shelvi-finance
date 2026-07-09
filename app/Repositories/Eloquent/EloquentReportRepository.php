@@ -112,7 +112,7 @@ class EloquentReportRepository implements ReportRepository
                 $in = (int) $g->where('direction', 'received')->sum('amount');
                 $out = (int) $g->where('direction', 'paid')->sum('amount');
 
-                return [$g->first()->bank?->name ?? '—', $in, $out, $in - $out];
+                return [$g->first()->bank?->label() ?? '—', $in, $out, $in - $out];
             })
             ->sortByDesc(fn ($r) => $r[1] + $r[2])->values()
             ->map(fn ($r) => [$r[0], $this->rupees($r[1]), $this->rupees($r[2]), $this->rupees($r[3])])->all();

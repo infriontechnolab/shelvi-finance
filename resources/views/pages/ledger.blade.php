@@ -3,7 +3,7 @@
     <x-slot:actions>
         <x-ui.combobox id="ledgerParty" :value="$ledgerParty" placeholder="Select party…" searchPlaceholder="Search party…"
             :options="$parties" />
-        <x-ui.button variant="outline" size="sm"><x-ui.icon name="plus" /> Export</x-ui.button>
+        <x-ui.button variant="outline" size="sm" href="{{ route('ledger.export', ['party' => $ledgerParty]) }}"><x-ui.icon name="file-spreadsheet" /> Export</x-ui.button>
     </x-slot:actions>
 
     @php

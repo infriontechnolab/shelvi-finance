@@ -64,7 +64,7 @@
                     <div class="space-y-1.5">
                         <x-ui.label for="t-bank">{{ $isReceived ? 'Deposit' : 'Source' }} Bank <span class="text-destructive">*</span></x-ui.label>
                         <x-ui.combobox id="t-bank" name="bank" width="w-full" placeholder="Select bank…" searchPlaceholder="Search bank…" :required="true"
-                            :value="$val('bank', $transaction->bank?->name)" :options="['' => 'Select bank…'] + $banksList" />
+                            :value="$val('bank', $transaction->bank?->account_number)" :options="['' => 'Select bank…'] + $banksList" />
                     </div>
 
                     @unless ($isReceived)

@@ -83,7 +83,7 @@ class EloquentDashboardRepository implements DashboardRepository
                 'date' => $t->txn_date->format('Y-m-d'),
                 'party' => $t->party?->name ?? '—',
                 'type' => ucfirst($t->direction),
-                'bank' => $t->bank?->name,
+                'bank' => $t->bank?->label(),
                 'amount' => $t->direction === 'paid' ? -intdiv($t->amount, 100) : intdiv($t->amount, 100),
                 'status' => $t->status,
             ]);

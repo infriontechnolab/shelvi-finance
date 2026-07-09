@@ -8,9 +8,11 @@ use App\Models\Cheque;
 use App\Repositories\Contracts\BankRepository;
 use App\Repositories\Contracts\ChequeRepository;
 use App\Repositories\Contracts\PartyRepository;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ChequeController extends Controller
 {
@@ -49,7 +51,7 @@ class ChequeController extends Controller
         $options = $this->formOptions();
         // Keep a soft-deleted party/bank selectable (dropdowns list active only).
         $options['parties'] = $this->keepCurrent($options['parties'], $row['party'] ?? null);
-        $options['banksList'] = $this->keepCurrent($options['banksList'], $row['bank'] ?? null);
+        $options['banksList'] = $this->keepCurrent($options['banksList'], $row['bankAccount'] ?? null, $row['bank'] ?? null);
 
         return view('pages.cheques-form', ['cheque' => $row, ...$options]);
     }
@@ -58,10 +60,10 @@ class ChequeController extends Controller
      * @param  array<string, string>  $options
      * @return array<string, string>
      */
-    private function keepCurrent(array $options, ?string $name): array
+    private function keepCurrent(array $options, ?string $key, ?string $label = null): array
     {
-        if ($name !== null && $name !== '' && ! array_key_exists($name, $options)) {
-            $options[$name] = $name.' (deleted)';
+        if ($key !== null && $key !== '' && ! array_key_exists($key, $options)) {
+            $options[$key] = ($label ?? $key).' (deleted)';
         }
 
         return $options;
@@ -94,6 +96,20 @@ class ChequeController extends Controller
         ]);
 
         return redirect()->route('cheques')->with('success', "Cheque marked {$data['status']}.");
+    }
+
+    /** All cheques, as CSV. */
+    public function export(): StreamedResponse
+    {
+        $rows = $this->cheques->all()->map(fn ($r) => [
+            $r['no'], $r['party'], $r['bank'], $r['issue'], $r['deposit'], $r['due'], $r['status'], $r['amount'],
+        ]);
+
+        return Csv::download(
+            'cheques-'.now()->format('Y-m-d').'.csv',
+            ['Cheque No', 'Party', 'Bank', 'Issue Date', 'Deposit Date', 'Due Date', 'Status', 'Amount'],
+            $rows,
+        );
     }
 
     /** Dropdowns + status list for the create + edit form. */

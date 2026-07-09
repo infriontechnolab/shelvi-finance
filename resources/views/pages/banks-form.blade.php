@@ -6,7 +6,7 @@
 @endphp
 
 <x-layouts.admin :title="$title">
-    <x-slot:subtitle>{{ $isEdit ? 'Update the ' . $bank['name'] . ' account.' : 'Link a new bank account.' }}</x-slot:subtitle>
+    <x-slot:subtitle>{{ $isEdit ? 'Update the ' . $bank['name'] . ' (' . $bank['account'] . ') account.' : 'Link a new bank account.' }}</x-slot:subtitle>
     <x-slot:actions>
         <x-ui.button variant="outline" size="sm" href="{{ route('banks') }}">
             <x-ui.icon name="arrow-left" /> Back to accounts

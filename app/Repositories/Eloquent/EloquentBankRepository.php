@@ -30,7 +30,9 @@ class EloquentBankRepository implements BankRepository
             'id' => $b->id,
             'name' => $b->name,
             'initials' => $b->initials,
-            'account' => $b->maskedAccount(),
+            // Full, not masked — two banks can share a name, so the account
+            // number is what actually tells them apart on this card.
+            'account' => $b->account_number,
             'holder' => $b->holder,
             'balance' => intdiv($b->currentBalance(), 100),
             'type' => $b->type,
@@ -65,7 +67,7 @@ class EloquentBankRepository implements BankRepository
         $running = (int) Bank::query()->sum('opening_balance');
 
         $chron = Transaction::query()
-            ->with(['party' => fn ($q) => $q->withTrashed()])
+            ->with(['party' => fn ($q) => $q->withTrashed(), 'bank' => fn ($q) => $q->withTrashed()])
             ->orderBy('txn_date')
             ->orderBy('id')
             ->get()
@@ -78,6 +80,8 @@ class EloquentBankRepository implements BankRepository
                     'id' => $t->reference ?? 'B-'.str_pad((string) $t->id, 4, '0', STR_PAD_LEFT),
                     'date' => $t->txn_date->format('Y-m-d'),
                     'desc' => $t->description ?? $t->party?->name ?? 'Transaction',
+                    // Statement combines every account, so identify which one each line is for.
+                    'bank' => $t->bank?->label() ?? '—',
                     'credit' => intdiv($credit, 100),
                     'debit' => intdiv($debit, 100),
                     'balance' => intdiv($running, 100),
@@ -89,8 +93,11 @@ class EloquentBankRepository implements BankRepository
 
     public function options(): array
     {
+        // Keyed by account_number (unique), not name — two banks can share the
+        // same name (e.g. two accounts at "Kotak Bank"); name alone would
+        // collapse them into one option and hide the other.
         return Bank::query()->orderBy('name')->get()
-            ->mapWithKeys(fn (Bank $b) => [$b->name => "{$b->name} ({$b->account_number})"])
+            ->mapWithKeys(fn (Bank $b) => [$b->account_number => $b->label()])
             ->all();
     }
 }
