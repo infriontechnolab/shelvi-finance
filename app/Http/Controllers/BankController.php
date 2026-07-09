@@ -82,12 +82,12 @@ class BankController extends Controller
     public function export(): StreamedResponse
     {
         $rows = $this->banks->transactions()->map(fn ($r) => [
-            $r['id'], $r['date'], $r['desc'], $r['credit'], $r['debit'], $r['balance'],
+            $r['id'], $r['date'], $r['desc'], $r['bank'], $r['credit'], $r['debit'], $r['balance'],
         ]);
 
         return Csv::download(
             'bank-statement-'.now()->format('Y-m-d').'.csv',
-            ['Ref', 'Date', 'Description', 'Credit', 'Debit', 'Balance'],
+            ['Ref', 'Date', 'Description', 'Bank', 'Credit', 'Debit', 'Balance'],
             $rows,
         );
     }

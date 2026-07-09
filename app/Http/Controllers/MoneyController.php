@@ -83,11 +83,7 @@ class MoneyController extends Controller
 
         $options = $this->formOptions();
         $options['parties'] = $this->keepCurrent($options['parties'], $transaction->party?->name);
-        $options['banksList'] = $this->keepCurrent(
-            $options['banksList'],
-            $transaction->bank?->account_number,
-            $transaction->bank ? "{$transaction->bank->name} ({$transaction->bank->account_number})" : null,
-        );
+        $options['banksList'] = $this->keepCurrent($options['banksList'], $transaction->bank?->account_number, $transaction->bank?->label());
 
         return view('pages.transactions-form', ['transaction' => $transaction, ...$options]);
     }

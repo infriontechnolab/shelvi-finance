@@ -19,10 +19,11 @@ class BankTxnsDataTable extends BaseDataTable
     {
         return (new CollectionDataTable($query))
             ->editColumn('desc', fn ($row) => $this->bold($row['desc']))
+            ->editColumn('bank', fn ($row) => $this->muted($row['bank']))
             ->editColumn('credit', fn ($row) => $row['credit'] > 0 ? $this->amount($row['credit'], 'positive') : $this->muted('—'))
             ->editColumn('debit', fn ($row) => $row['debit'] > 0 ? $this->amount($row['debit'], 'negative') : $this->muted('—'))
             ->editColumn('balance', fn ($row) => $this->money($row['balance']))
-            ->rawColumns(['desc', 'credit', 'debit', 'balance'])
+            ->rawColumns(['desc', 'bank', 'credit', 'debit', 'balance'])
             ->setRowId('id');
     }
 
@@ -44,6 +45,7 @@ class BankTxnsDataTable extends BaseDataTable
             Column::make('id')->title('Ref')->visible(false),
             Column::make('date')->title('Date')->render('window.fmtDate(data)'),
             Column::make('desc')->title('Description'),
+            Column::make('bank')->title('Bank'),
             Column::make('credit')->title('Credit')->addClass('text-right'),
             Column::make('debit')->title('Debit')->addClass('text-right'),
             Column::make('balance')->title('Balance')->addClass('text-right'),

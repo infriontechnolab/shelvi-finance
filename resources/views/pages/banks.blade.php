@@ -42,7 +42,7 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" title="Delete forever"
-                                        data-confirm="Permanently delete {{ $b['name'] }}? This cannot be undone."
+                                        data-confirm="Permanently delete {{ $b['name'] }} ({{ $b['account'] }})? This cannot be undone."
                                         class="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
                                         <x-ui.icon name="trash-2" class="size-4" />
                                     </button>
@@ -60,7 +60,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" title="Delete account"
-                                            data-confirm="Delete {{ $b['name'] }}? This action cannot be undone."
+                                            data-confirm="Delete {{ $b['name'] }} ({{ $b['account'] }})? This action cannot be undone."
                                             class="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
                                             <x-ui.icon name="trash-2" class="size-4" />
                                         </button>

@@ -51,11 +51,7 @@ class ChequeController extends Controller
         $options = $this->formOptions();
         // Keep a soft-deleted party/bank selectable (dropdowns list active only).
         $options['parties'] = $this->keepCurrent($options['parties'], $row['party'] ?? null);
-        $options['banksList'] = $this->keepCurrent(
-            $options['banksList'],
-            $row['bankAccount'] ?? null,
-            isset($row['bank'], $row['bankAccount']) ? "{$row['bank']} ({$row['bankAccount']})" : null,
-        );
+        $options['banksList'] = $this->keepCurrent($options['banksList'], $row['bankAccount'] ?? null, $row['bank'] ?? null);
 
         return view('pages.cheques-form', ['cheque' => $row, ...$options]);
     }
