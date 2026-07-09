@@ -83,9 +83,12 @@
                     :options="['10' => '10 rows', '25' => '25 rows', '50' => '50 rows']" />
             </div>
             <x-ui.card>
-                <x-ui.card-header>
-                    <x-ui.card-title>Recent Payments</x-ui.card-title>
-                    <x-ui.card-description>Payments recorded across all banks.</x-ui.card-description>
+                <x-ui.card-header class="flex-row items-center justify-between space-y-0">
+                    <div class="space-y-1.5">
+                        <x-ui.card-title>Recent Payments</x-ui.card-title>
+                        <x-ui.card-description>Payments recorded across all banks.</x-ui.card-description>
+                    </div>
+                    <x-ui.button variant="outline" size="sm" href="{{ route('money-paid.export') }}"><x-ui.icon name="file-spreadsheet" /> Export</x-ui.button>
                 </x-ui.card-header>
                 <x-ui.card-content>
                     {{ $dataTable->table(['class' => 'w-full text-sm']) }}

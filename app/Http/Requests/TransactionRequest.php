@@ -28,7 +28,8 @@ class TransactionRequest extends FormRequest
             'payee_account' => ['nullable', 'string', 'max:34'],
             'amount' => ['required', 'numeric', 'min:0'],
             'method' => ['required', Rule::in(array_keys(config('options.payment_methods')))],
-            'bank' => ['required', Rule::exists('banks', 'name')],
+            // Bank is selected by account number, not name — two banks can share a name.
+            'bank' => ['required', Rule::exists('banks', 'account_number')],
             'ref' => ['nullable', 'string', 'max:100'],
             'remark' => ['nullable', 'string', 'max:1000'],
             'date' => ['required', 'date'],
@@ -48,7 +49,7 @@ class TransactionRequest extends FormRequest
             'customer_name' => $this->input('customer') ?: null,
             'payee_holder' => $this->input('payee_holder') ?: null,
             'payee_account_no' => $this->input('payee_account') ?: null,
-            'bank_id' => Bank::idForName($this->input('bank')),
+            'bank_id' => Bank::idForAccount($this->input('bank')),
             'method' => $this->input('method'),
             'amount' => (int) round(((float) $this->input('amount')) * 100),
             'reference' => $this->input('ref') ?: null,

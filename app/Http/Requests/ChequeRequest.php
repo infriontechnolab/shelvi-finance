@@ -23,7 +23,8 @@ class ChequeRequest extends FormRequest
             'no' => ['required', 'string', 'max:50'],
             'amount' => ['required', 'numeric', 'min:0'],
             'party' => ['required', Rule::exists('parties', 'name')],
-            'bank' => ['required', Rule::exists('banks', 'name')],
+            // Bank is selected by account number, not name — two banks can share a name.
+            'bank' => ['required', Rule::exists('banks', 'account_number')],
             'issue' => ['required', 'date'],
             'deposit' => ['nullable', 'date'],
             'due' => ['required', 'date'],
@@ -41,7 +42,7 @@ class ChequeRequest extends FormRequest
         return [
             'cheque_no' => $this->input('no'),
             'party_id' => Party::idForName($this->input('party')),
-            'bank_id' => Bank::idForName($this->input('bank')),
+            'bank_id' => Bank::idForAccount($this->input('bank')),
             'amount' => (int) round(((float) $this->input('amount')) * 100),
             'issue_date' => $this->input('issue'),
             'deposit_date' => $this->input('deposit') ?: null,

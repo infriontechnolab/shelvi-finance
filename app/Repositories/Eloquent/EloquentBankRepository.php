@@ -89,8 +89,11 @@ class EloquentBankRepository implements BankRepository
 
     public function options(): array
     {
+        // Keyed by account_number (unique), not name — two banks can share the
+        // same name (e.g. two accounts at "Kotak Bank"); name alone would
+        // collapse them into one option and hide the other.
         return Bank::query()->orderBy('name')->get()
-            ->mapWithKeys(fn (Bank $b) => [$b->name => "{$b->name} ({$b->account_number})"])
+            ->mapWithKeys(fn (Bank $b) => [$b->account_number => "{$b->name} ({$b->account_number})"])
             ->all();
     }
 }

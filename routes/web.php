@@ -23,6 +23,7 @@ Route::middleware('auth')->group(function () {
 
     // Bank Accounts.
     Route::get('/banks', [BankController::class, 'index'])->name('banks')->middleware('permission:banks.view');
+    Route::get('/banks/export', [BankController::class, 'export'])->name('banks.export')->middleware('permission:banks.view');
     Route::get('/banks/create', [BankController::class, 'create'])->name('banks.create')->middleware('permission:banks.create');
     Route::post('/banks', [BankController::class, 'store'])->name('banks.store')->middleware('permission:banks.create');
     Route::get('/banks/{bank}/edit', [BankController::class, 'edit'])->name('banks.edit')->middleware('permission:banks.update');
@@ -31,6 +32,7 @@ Route::middleware('auth')->group(function () {
 
     // Party Management.
     Route::get('/parties', [PartyController::class, 'index'])->name('parties')->middleware('permission:parties.view');
+    Route::get('/parties/export', [PartyController::class, 'export'])->name('parties.export')->middleware('permission:parties.view');
     Route::get('/parties/create', [PartyController::class, 'create'])->name('parties.create')->middleware('permission:parties.create');
     Route::post('/parties', [PartyController::class, 'store'])->name('parties.store')->middleware('permission:parties.create');
     Route::get('/parties/{party}/edit', [PartyController::class, 'edit'])->name('parties.edit')->middleware('permission:parties.update');
@@ -40,7 +42,9 @@ Route::middleware('auth')->group(function () {
     // Money Received / Money Paid (both are `transactions` rows, direction-tagged).
     Route::middleware('permission:transactions.view')->group(function () {
         Route::get('/money-received', [MoneyController::class, 'received'])->name('money-received');
+        Route::get('/money-received/export', [MoneyController::class, 'exportReceived'])->name('money-received.export');
         Route::get('/money-paid', [MoneyController::class, 'paid'])->name('money-paid');
+        Route::get('/money-paid/export', [MoneyController::class, 'exportPaid'])->name('money-paid.export');
     });
     Route::post('/money-received', [MoneyController::class, 'store'])->name('money-received.store')->middleware('permission:transactions.create');
     Route::post('/money-paid', [MoneyController::class, 'store'])->name('money-paid.store')->middleware('permission:transactions.create');
@@ -50,9 +54,11 @@ Route::middleware('auth')->group(function () {
 
     // Party Ledger.
     Route::get('/ledger', [LedgerController::class, 'index'])->name('ledger')->middleware('permission:ledger.view');
+    Route::get('/ledger/export', [LedgerController::class, 'export'])->name('ledger.export')->middleware('permission:ledger.view');
 
     // Cheque Management.
     Route::get('/cheques', [ChequeController::class, 'index'])->name('cheques')->middleware('permission:cheques.view');
+    Route::get('/cheques/export', [ChequeController::class, 'export'])->name('cheques.export')->middleware('permission:cheques.view');
     Route::get('/cheques/create', [ChequeController::class, 'create'])->name('cheques.create')->middleware('permission:cheques.create');
     Route::post('/cheques', [ChequeController::class, 'store'])->name('cheques.store')->middleware('permission:cheques.create');
     Route::get('/cheques/{cheque}/edit', [ChequeController::class, 'edit'])->name('cheques.edit')->middleware('permission:cheques.update');

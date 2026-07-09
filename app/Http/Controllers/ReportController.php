@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Repositories\Contracts\ReportRepository;
+use App\Support\Csv;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
@@ -43,7 +43,7 @@ class ReportController extends Controller
         $file = $report.'-'.$period.'.'.$format;
 
         return $format === 'csv'
-            ? $this->csv($data, $file)
+            ? Csv::download($file, array_column($data['columns'], 'label'), $data['rows'])
             : $this->pdf($data, $file);
     }
 
@@ -52,22 +52,6 @@ class ReportController extends Controller
         return in_array($request->query('period'), self::PERIODS, true)
             ? $request->query('period')
             : 'all';
-    }
-
-    private function csv(array $data, string $file): StreamedResponse
-    {
-        $headers = ['Content-Type' => 'text/csv; charset=UTF-8'];
-
-        return response()->streamDownload(function () use ($data) {
-            $out = fopen('php://output', 'w');
-            // UTF-8 BOM so Excel renders the ₹ symbol correctly.
-            fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, array_column($data['columns'], 'label'));
-            foreach ($data['rows'] as $row) {
-                fputcsv($out, $row);
-            }
-            fclose($out);
-        }, $file, $headers);
     }
 
     private function pdf(array $data, string $file)

@@ -49,4 +49,29 @@ class Bank extends Model
 
         return 'XXXX XXXX '.$last4;
     }
+
+    /**
+     * "Name (Account)" — the name alone is ambiguous once two banks share it,
+     * so every listing/export identifies a bank by this label, not bare name.
+     */
+    public function label(): string
+    {
+        return "{$this->name} ({$this->account_number})";
+    }
+
+    /**
+     * Resolve an account number to its bank id. Unlike idForName() (from
+     * ResolvableByName), this is unambiguous even when two banks share a name.
+     */
+    public static function idForAccount(?string $accountNumber): ?int
+    {
+        if ($accountNumber === null || $accountNumber === '') {
+            return null;
+        }
+
+        return static::withTrashed()
+            ->where('account_number', $accountNumber)
+            ->orderByRaw('deleted_at is null desc') // prefer the active row
+            ->value('id');
+    }
 }

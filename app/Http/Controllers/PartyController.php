@@ -6,7 +6,10 @@ use App\DataTables\PartiesDataTable;
 use App\Http\Requests\PartyRequest;
 use App\Models\Party;
 use App\Repositories\Contracts\PartyRepository;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PartyController extends Controller
 {
@@ -54,6 +57,27 @@ class PartyController extends Controller
         $party->delete();
 
         return redirect()->route('parties')->with('success', 'Party deleted.');
+    }
+
+    /** All parties (respecting the list's category filter, if any), as CSV. */
+    public function export(Request $request): StreamedResponse
+    {
+        $rows = $this->parties->all();
+        $category = $request->query('category');
+        if ($category) {
+            $rows = $rows->where('category', $category)->values();
+        }
+
+        $rows = $rows->map(fn ($r) => [
+            $r['name'], $r['category'], $r['phone'], $r['opening'],
+            $r['current'], $r['balType'], $r['limit'], $r['status'],
+        ]);
+
+        return Csv::download(
+            'parties-'.now()->format('Y-m-d').'.csv',
+            ['Party', 'Category', 'Phone', 'Opening', 'Current Balance', 'Type', 'Credit Limit', 'Status'],
+            $rows,
+        );
     }
 
     /** Static select lists for the create + edit form. */

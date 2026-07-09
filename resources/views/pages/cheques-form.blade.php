@@ -57,7 +57,7 @@
                     <div class="space-y-1.5">
                         <x-ui.label for="c-bank">Bank <span class="text-destructive">*</span></x-ui.label>
                         <x-ui.combobox id="c-bank" name="bank" width="w-full" placeholder="Select bank…" :required="true"
-                            :value="$val('bank')" :options="['' => 'Select bank…'] + $banksList" />
+                            :value="old('bank', $cheque['bankAccount'] ?? '')" :options="['' => 'Select bank…'] + $banksList" />
                     </div>
 
                     <div class="space-y-1.5">

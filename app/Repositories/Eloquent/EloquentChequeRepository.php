@@ -41,7 +41,10 @@ class EloquentChequeRepository implements ChequeRepository
             'id' => $c->id,
             'no' => $c->cheque_no,
             'party' => $c->party?->name,
-            'bank' => $c->bank?->name,
+            'bank' => $c->bank?->label(),
+            // Form-value binding: banks are selected by account number (unique),
+            // since 'bank' (name) can collide across two accounts at the same bank.
+            'bankAccount' => $c->bank?->account_number,
             'amount' => intdiv($c->amount, 100),
             'issue' => $c->issue_date?->format('Y-m-d'),
             'deposit' => $c->deposit_date?->format('Y-m-d'),

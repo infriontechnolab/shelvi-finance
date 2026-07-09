@@ -4,6 +4,7 @@
         <x-trash-toggle table="cheques-table" />
         <x-ui.combobox id="chequeStatus" placeholder="All statuses" searchPlaceholder="Filter status…"
             :options="['' => 'All statuses', 'Pending' => 'Pending', 'Cleared' => 'Cleared', 'Bounced' => 'Bounced']" />
+        <x-ui.button variant="outline" size="sm" href="{{ route('cheques.export') }}"><x-ui.icon name="file-spreadsheet" /> Export</x-ui.button>
         @can('cheques.create')
             <x-ui.button size="sm" href="{{ route('cheques.create') }}"><x-ui.icon name="plus" /> New cheque</x-ui.button>
         @endcan

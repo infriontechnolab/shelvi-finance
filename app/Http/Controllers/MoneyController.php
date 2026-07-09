@@ -7,14 +7,19 @@ use App\DataTables\ReceivedDataTable;
 use App\Http\Requests\TransactionRequest;
 use App\Models\Transaction;
 use App\Repositories\Contracts\BankRepository;
+use App\Repositories\Contracts\MoneyRepository;
 use App\Repositories\Contracts\PartyRepository;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MoneyController extends Controller
 {
     public function __construct(
         private readonly PartyRepository $parties,
         private readonly BankRepository $banks,
+        private readonly MoneyRepository $money,
     ) {}
 
     public function received(ReceivedDataTable $dataTable)
@@ -25,6 +30,38 @@ class MoneyController extends Controller
     public function paid(PaidDataTable $dataTable)
     {
         return $dataTable->render('pages.money-paid', $this->formOptions());
+    }
+
+    /** All recorded receipts, as CSV. */
+    public function exportReceived(): StreamedResponse
+    {
+        return $this->exportMoney($this->money->received(), 'money-received', received: true);
+    }
+
+    /** All recorded payments (including payee bank details), as CSV. */
+    public function exportPaid(): StreamedResponse
+    {
+        return $this->exportMoney($this->money->paid(), 'money-paid', received: false);
+    }
+
+    private function exportMoney(Collection $entries, string $file, bool $received): StreamedResponse
+    {
+        $headers = ['Voucher', 'Date', 'Party', 'Customer Name', 'Method', 'Bank', 'Vehicle No'];
+        if (! $received) {
+            $headers = [...$headers, 'Account Holder', 'Account No'];
+        }
+        $headers = [...$headers, 'Remark', 'Status', 'Amount'];
+
+        $rows = $entries->map(function ($r) use ($received) {
+            $row = [$r['id'], $r['date'], $r['party'], $r['customer'], $r['method'], $r['bank'], $r['ref']];
+            if (! $received) {
+                $row = [...$row, $r['payeeHolder'], $r['payeeAccount']];
+            }
+
+            return [...$row, $r['remark'], $r['status'], $r['amount']];
+        });
+
+        return Csv::download($file.'-'.now()->format('Y-m-d').'.csv', $headers, $rows);
     }
 
     public function store(TransactionRequest $request): RedirectResponse
@@ -46,7 +83,11 @@ class MoneyController extends Controller
 
         $options = $this->formOptions();
         $options['parties'] = $this->keepCurrent($options['parties'], $transaction->party?->name);
-        $options['banksList'] = $this->keepCurrent($options['banksList'], $transaction->bank?->name);
+        $options['banksList'] = $this->keepCurrent(
+            $options['banksList'],
+            $transaction->bank?->account_number,
+            $transaction->bank ? "{$transaction->bank->name} ({$transaction->bank->account_number})" : null,
+        );
 
         return view('pages.transactions-form', ['transaction' => $transaction, ...$options]);
     }
@@ -105,10 +146,10 @@ class MoneyController extends Controller
      * @param  array<string, string>  $options
      * @return array<string, string>
      */
-    private function keepCurrent(array $options, ?string $name): array
+    private function keepCurrent(array $options, ?string $key, ?string $label = null): array
     {
-        if ($name !== null && $name !== '' && ! array_key_exists($name, $options)) {
-            $options[$name] = $name.' (deleted)';
+        if ($key !== null && $key !== '' && ! array_key_exists($key, $options)) {
+            $options[$key] = ($label ?? $key).' (deleted)';
         }
 
         return $options;

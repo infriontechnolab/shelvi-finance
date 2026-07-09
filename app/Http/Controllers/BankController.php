@@ -7,8 +7,10 @@ use App\Http\Requests\BankRequest;
 use App\Models\Bank;
 use App\Repositories\Contracts\BankRepository;
 use App\Support\Access;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BankController extends Controller
 {
@@ -74,5 +76,19 @@ class BankController extends Controller
         $bank->delete();
 
         return redirect()->route('banks')->with('success', 'Bank account deleted.');
+    }
+
+    /** Combined account statement across all banks, as CSV. */
+    public function export(): StreamedResponse
+    {
+        $rows = $this->banks->transactions()->map(fn ($r) => [
+            $r['id'], $r['date'], $r['desc'], $r['credit'], $r['debit'], $r['balance'],
+        ]);
+
+        return Csv::download(
+            'bank-statement-'.now()->format('Y-m-d').'.csv',
+            ['Ref', 'Date', 'Description', 'Credit', 'Debit', 'Balance'],
+            $rows,
+        );
     }
 }
