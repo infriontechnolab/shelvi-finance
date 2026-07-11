@@ -22,7 +22,8 @@ class EloquentLedgerRepository implements LedgerRepository
         }
 
         $running = $p->opening_balance;
-        $entries = $p->ledgerEntries()->with('transaction')->orderBy('entry_date')->orderBy('id')->get();
+        $entries = $p->ledgerEntries()->with(['transaction' => fn ($q) => $q->with('bank')])
+            ->orderBy('entry_date')->orderBy('id')->get();
 
         // Opening-balance row (mirrors the original ledger's first line).
         $openDate = $entries->first()?->entry_date?->format('Y-m-d') ?? now()->format('Y-m-d');
@@ -30,7 +31,11 @@ class EloquentLedgerRepository implements LedgerRepository
             'date' => $openDate,
             'particulars' => 'Opening Balance',
             'customer' => '-',
+            'method' => '-',
+            'bank' => '-',
             'vch' => '-',
+            'payeeHolder' => '-',
+            'payeeAccount' => '-',
             'remark' => '-',
             'debit' => 0,
             'credit' => 0,
@@ -40,12 +45,17 @@ class EloquentLedgerRepository implements LedgerRepository
 
         foreach ($entries as $e) {
             $running += $e->debit - $e->credit;
+            $t = $e->transaction;
             $rows->push([
                 'date' => $e->entry_date->format('Y-m-d'),
                 'particulars' => $e->particulars,
-                'customer' => $e->transaction?->customer_name ?: '-',
+                'customer' => $t?->customer_name ?: '-',
+                'method' => $t?->method ?: '-',
+                'bank' => $t?->bank?->label() ?: '-',
                 'vch' => $e->vch ?? '-',
-                'remark' => $e->transaction?->remark ?: '-',
+                'payeeHolder' => $t?->payee_holder ?: '-',
+                'payeeAccount' => $t?->payee_account_no ?: '-',
+                'remark' => $t?->remark ?: '-',
                 'debit' => intdiv($e->debit, 100),
                 'credit' => intdiv($e->credit, 100),
                 'balance' => intdiv(abs($running), 100),  // magnitude; side shown via balType

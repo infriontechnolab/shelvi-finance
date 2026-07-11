@@ -81,6 +81,7 @@
                         <x-ui.card-description>Collections recorded across all banks.</x-ui.card-description>
                     </div>
                     <x-ui.button variant="outline" size="sm" href="{{ route('money-received.export') }}"><x-ui.icon name="file-spreadsheet" /> Export</x-ui.button>
+                    <x-ui.button variant="outline" size="sm" href="{{ route('money-received.export-pdf') }}"><x-ui.icon name="file-text" /> PDF</x-ui.button>
                 </x-ui.card-header>
                 <x-ui.card-content>
                     {{ $dataTable->table(['class' => 'w-full text-sm']) }}
