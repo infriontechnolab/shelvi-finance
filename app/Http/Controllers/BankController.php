@@ -8,6 +8,9 @@ use App\Models\Bank;
 use App\Repositories\Contracts\BankRepository;
 use App\Support\Access;
 use App\Support\Csv;
+use App\Support\Inr;
+use App\Support\PdfCell;
+use App\Support\PdfExport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -89,6 +92,31 @@ class BankController extends Controller
             'bank-statement-'.now()->format('Y-m-d').'.csv',
             ['Ref', 'Date', 'Description', 'Bank', 'Credit', 'Debit', 'Balance'],
             $rows,
+        );
+    }
+
+    /** Combined account statement across all banks, as a colour-coded PDF. */
+    public function exportPdf()
+    {
+        $rows = $this->banks->transactions()->map(fn ($r) => [
+            PdfCell::plain($r['id']),
+            PdfCell::plain($r['date']),
+            PdfCell::plain($r['desc']),
+            PdfCell::plain($r['bank']),
+            $r['credit'] > 0 ? PdfCell::amount(Inr::format($r['credit']), 'positive') : PdfCell::muted('—'),
+            $r['debit'] > 0 ? PdfCell::amount(Inr::format($r['debit']), 'negative') : PdfCell::muted('—'),
+            PdfCell::plain(Inr::format($r['balance'])),
+        ]);
+
+        return PdfExport::download(
+            'bank-statement-'.now()->format('Y-m-d').'.pdf',
+            'Bank Statement',
+            [
+                ['label' => 'Ref'], ['label' => 'Date'], ['label' => 'Description'], ['label' => 'Bank'],
+                ['label' => 'Credit', 'align' => 'right'], ['label' => 'Debit', 'align' => 'right'], ['label' => 'Balance', 'align' => 'right'],
+            ],
+            $rows,
+            'Combined account statement across all banks',
         );
     }
 }

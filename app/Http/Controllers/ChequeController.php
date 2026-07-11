@@ -9,6 +9,9 @@ use App\Repositories\Contracts\BankRepository;
 use App\Repositories\Contracts\ChequeRepository;
 use App\Repositories\Contracts\PartyRepository;
 use App\Support\Csv;
+use App\Support\Inr;
+use App\Support\PdfCell;
+use App\Support\PdfExport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -109,6 +112,39 @@ class ChequeController extends Controller
             'cheques-'.now()->format('Y-m-d').'.csv',
             ['Cheque No', 'Party', 'Bank', 'Issue Date', 'Deposit Date', 'Due Date', 'Status', 'Amount'],
             $rows,
+        );
+    }
+
+    private const STATUS_TONES = [
+        'Cleared' => 'success',
+        'Pending' => 'warning',
+        'Bounced' => 'danger',
+    ];
+
+    /** All cheques, as a colour-coded PDF. */
+    public function exportPdf()
+    {
+        $rows = $this->cheques->all()->map(fn ($r) => [
+            PdfCell::plain($r['no']),
+            PdfCell::plain($r['party']),
+            PdfCell::plain($r['bank']),
+            PdfCell::plain($r['issue']),
+            $r['deposit'] ? PdfCell::plain($r['deposit']) : PdfCell::muted('—'),
+            PdfCell::plain($r['due']),
+            PdfCell::pill($r['status'], self::STATUS_TONES[$r['status']] ?? 'neutral'),
+            PdfCell::plain(Inr::format($r['amount'])),
+        ]);
+
+        return PdfExport::download(
+            'cheques-'.now()->format('Y-m-d').'.pdf',
+            'Cheque Management',
+            [
+                ['label' => 'Cheque No'], ['label' => 'Party'], ['label' => 'Bank'],
+                ['label' => 'Issue Date'], ['label' => 'Deposit Date'], ['label' => 'Due Date'],
+                ['label' => 'Status'], ['label' => 'Amount', 'align' => 'right'],
+            ],
+            $rows,
+            'Track issued and received cheques through clearing',
         );
     }
 

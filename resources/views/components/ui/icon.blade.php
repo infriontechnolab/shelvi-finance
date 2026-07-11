@@ -27,6 +27,7 @@
         'triangle-alert' => 'triangle-alert',
         'info' => 'info',
         'file-spreadsheet' => 'file-spreadsheet',
+        'file-text' => 'file-text',
         'rotate-ccw' => 'rotate-ccw',
         'trash-2' => 'trash-2',
     ];

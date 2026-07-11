@@ -102,6 +102,7 @@
                 <x-ui.card-description>Recent credit and debit activity with running balance.</x-ui.card-description>
             </div>
             <x-ui.button variant="outline" size="sm" href="{{ route('banks.export') }}"><x-ui.icon name="file-spreadsheet" /> Export</x-ui.button>
+            <x-ui.button variant="outline" size="sm" href="{{ route('banks.export-pdf') }}"><x-ui.icon name="file-text" /> PDF</x-ui.button>
         </x-ui.card-header>
         <x-ui.card-content>
             {{ $dataTable->table(['class' => 'w-full text-sm']) }}

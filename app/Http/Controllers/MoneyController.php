@@ -10,6 +10,9 @@ use App\Repositories\Contracts\BankRepository;
 use App\Repositories\Contracts\MoneyRepository;
 use App\Repositories\Contracts\PartyRepository;
 use App\Support\Csv;
+use App\Support\Inr;
+use App\Support\PdfCell;
+use App\Support\PdfExport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -62,6 +65,72 @@ class MoneyController extends Controller
         });
 
         return Csv::download($file.'-'.now()->format('Y-m-d').'.csv', $headers, $rows);
+    }
+
+    private const METHOD_TONES = [
+        'Online' => 'info',
+        'UPI' => 'accent',
+        'Cheque' => 'warning',
+        'Cash' => 'success',
+    ];
+
+    private const STATUS_TONES = [
+        'Cleared' => 'success',
+        'Pending' => 'warning',
+    ];
+
+    /** All recorded receipts, as a colour-coded PDF. */
+    public function exportReceivedPdf()
+    {
+        return $this->exportMoneyPdf($this->money->received(), 'money-received', 'Money Received',
+            'Collections recorded across all banks', received: true);
+    }
+
+    /** All recorded payments (including payee bank details), as a colour-coded PDF. */
+    public function exportPaidPdf()
+    {
+        return $this->exportMoneyPdf($this->money->paid(), 'money-paid', 'Money Paid',
+            'Payments recorded across all banks', received: false);
+    }
+
+    private function exportMoneyPdf(Collection $entries, string $file, string $title, string $subtitle, bool $received)
+    {
+        $columns = [
+            ['label' => 'Voucher'], ['label' => 'Date'], ['label' => 'Party'], ['label' => 'Customer Name'],
+            ['label' => 'Method'], ['label' => 'Bank'], ['label' => 'Vehicle No'],
+        ];
+        if (! $received) {
+            $columns = [...$columns, ['label' => 'Account Holder'], ['label' => 'Account No']];
+        }
+        $columns = [...$columns, ['label' => 'Remark'], ['label' => 'Status'], ['label' => 'Amount', 'align' => 'right']];
+
+        $rows = $entries->map(function ($r) use ($received) {
+            $row = [
+                PdfCell::plain($r['id']),
+                PdfCell::plain($r['date']),
+                PdfCell::plain($r['party']),
+                $r['customer'] ? PdfCell::plain($r['customer']) : PdfCell::muted('—'),
+                PdfCell::pill($r['method'], self::METHOD_TONES[$r['method']] ?? 'neutral'),
+                PdfCell::plain($r['bank']),
+                $r['ref'] ? PdfCell::plain($r['ref']) : PdfCell::muted('—'),
+            ];
+            if (! $received) {
+                $row = [
+                    ...$row,
+                    $r['payeeHolder'] ? PdfCell::plain($r['payeeHolder']) : PdfCell::muted('—'),
+                    $r['payeeAccount'] ? PdfCell::plain($r['payeeAccount']) : PdfCell::muted('—'),
+                ];
+            }
+
+            return [
+                ...$row,
+                $r['remark'] ? PdfCell::plain($r['remark']) : PdfCell::muted('—'),
+                PdfCell::pill($r['status'], self::STATUS_TONES[$r['status']] ?? 'neutral'),
+                PdfCell::amount(Inr::format($r['amount']), $received ? 'positive' : 'negative'),
+            ];
+        });
+
+        return PdfExport::download($file.'-'.now()->format('Y-m-d').'.pdf', $title, $columns, $rows, $subtitle);
     }
 
     public function store(TransactionRequest $request): RedirectResponse

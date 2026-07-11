@@ -5,6 +5,7 @@
         <x-ui.combobox id="partyCategory" placeholder="All categories" searchPlaceholder="Filter category…"
             :options="['' => 'All categories', 'Customer' => 'Customer', 'Vendor' => 'Vendor', 'Finance Co' => 'Finance Co', 'Agency' => 'Agency']" />
         <x-ui.button variant="outline" size="sm" href="{{ route('parties.export') }}"><x-ui.icon name="file-spreadsheet" /> Export</x-ui.button>
+        <x-ui.button variant="outline" size="sm" href="{{ route('parties.export-pdf') }}"><x-ui.icon name="file-text" /> PDF</x-ui.button>
         @can('parties.create')
             <x-ui.button size="sm" href="{{ route('parties.create') }}"><x-ui.icon name="plus" /> New party</x-ui.button>
         @endcan

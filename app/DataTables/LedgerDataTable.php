@@ -24,12 +24,16 @@ class LedgerDataTable extends BaseDataTable
         return (new CollectionDataTable($query))
             ->editColumn('particulars', fn ($row) => $this->bold($row['particulars']))
             ->editColumn('customer', fn ($row) => $row['customer'] === '-' ? $this->muted('—') : $this->mono($row['customer']))
+            ->editColumn('method', fn ($row) => $row['method'] === '-' ? $this->muted('—') : $this->mono($row['method']))
+            ->editColumn('bank', fn ($row) => $row['bank'] === '-' ? $this->muted('—') : $this->mono($row['bank']))
             ->editColumn('vch', fn ($row) => $row['vch'] === '-' ? $this->muted('—') : $this->mono($row['vch']))
+            ->editColumn('payeeHolder', fn ($row) => $row['payeeHolder'] === '-' ? $this->muted('—') : $this->mono($row['payeeHolder']))
+            ->editColumn('payeeAccount', fn ($row) => $row['payeeAccount'] === '-' ? $this->muted('—') : $this->mono($row['payeeAccount']))
             ->editColumn('remark', fn ($row) => $this->remark($row['remark'] === '-' ? null : $row['remark']))
             ->editColumn('debit', fn ($row) => $row['debit'] > 0 ? $this->amount($row['debit'], 'negative') : $this->muted('—'))
             ->editColumn('credit', fn ($row) => $row['credit'] > 0 ? $this->amount($row['credit'], 'positive') : $this->muted('—'))
             ->editColumn('balance', fn ($row) => $this->amount($row['balance'], $row['balType'] === 'DR' ? 'negative' : 'positive').' '.$this->drCr($row['balType'], 'entry'))
-            ->rawColumns(['particulars', 'customer', 'vch', 'remark', 'debit', 'credit', 'balance']);
+            ->rawColumns(['particulars', 'customer', 'method', 'bank', 'vch', 'payeeHolder', 'payeeAccount', 'remark', 'debit', 'credit', 'balance']);
     }
 
     public function query(): Collection
@@ -50,7 +54,11 @@ class LedgerDataTable extends BaseDataTable
             Column::make('date')->title('Date')->render('window.fmtDate(data)'),
             Column::make('particulars')->title('Particulars'),
             Column::make('customer')->title('Customer Name'),
+            Column::make('method')->title('Method'),
+            Column::make('bank')->title('Bank'),
             Column::make('vch')->title('Voucher'),
+            Column::make('payeeHolder')->title('Account Holder'),
+            Column::make('payeeAccount')->title('Account No'),
             Column::make('remark')->title('Remark'),
             Column::make('debit')->title('Debit')->addClass('text-right'),
             Column::make('credit')->title('Credit')->addClass('text-right'),
