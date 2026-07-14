@@ -46,9 +46,34 @@ SESSION_DRIVER=database
 CACHE_STORE=database
 QUEUE_CONNECTION=sync
 LOG_LEVEL=error
+
+# Required — login is email + emailed OTP only, there is no password fallback.
+# Without a working mailer, nobody can log in at all.
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your-gmail-address@gmail.com
+MAIL_PASSWORD=your-16-char-gmail-app-password
+MAIL_FROM_ADDRESS=your-gmail-address@gmail.com
+MAIL_FROM_NAME="Shelvi Finance"
+
+# Leave unset in production so each user's OTP goes to their OWN email
+# (config/otp.php falls back to the logging-in user's address when this is
+# absent). Only set this if you deliberately want every OTP routed to one
+# fixed inbox instead.
+# OTP_RECIPIENT_EMAIL=
 ```
 
 Accounts are created interactively by `php artisan app:setup` (above) — no credentials in `.env`.
+Gmail App Password: Google Account → Security → 2-Step Verification (must be on) → App passwords.
+
+## Wipe business data (keep users/roles)
+```bash
+php artisan app:wipe-data          # asks for confirmation
+php artisan app:wipe-data --force  # skips it — take a mysqldump backup first
+```
+Deletes all rows from `banks`, `parties`, `transactions`, `cheques`, `ledger_entries`. Does **not**
+touch `users`, `roles`, `permissions`, or role assignments — every existing login keeps working.
 
 ## Update later
 ```bash
